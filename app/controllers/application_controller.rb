@@ -74,4 +74,14 @@ class ApplicationController < ActionController::API
     return nil if slug.blank?
     Organization.find_by(slug: slug, status: :active)
   end
+
+  def not_found
+    render json: { error: "Ruta no encontrada" }, status: :not_found
+  end
+
+  def internal_server_error(error)
+    Rails.logger.error error.message
+    Rails.logger.error error.backtrace.join("\n")
+    render json: { error: "Error interno del servidor" }, status: :internal_server_error
+  end
 end

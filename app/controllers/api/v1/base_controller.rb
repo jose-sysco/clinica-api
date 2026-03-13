@@ -9,12 +9,12 @@ module Api
             
             private
 
-            def not_found
-                render json: { error: "Recurso no encontrado"}, status: :not_found
+            def not_found(error)
+                render json: { error: "Recurso no encontrado", detail: error.message }, status: :not_found
             end
 
-            def unprocessable_entity
-                render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
+            def unprocessable_entity(error)
+                render json: { errors: error.record.errors.full_messages }, status: :unprocessable_entity
             end
 
             def tenant_not_set
