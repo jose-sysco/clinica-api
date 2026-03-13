@@ -35,23 +35,34 @@ module Api
         end
 
         def destroy
-          token = request.headers["Authorization"]&.split(" ")&.last
-          if token
-            decoded = JWT.decode(
-              token,
-              Rails.application.credentials.devise_jwt_secret_key,
-              true,
-              algorithm: "HS256"
-            ) rescue nil
+            token = request.headers["Authorization"]&.split(" ")&.last
 
-            if decoded
-              jti = decoded.first["jti"]
-              exp = decoded.first["exp"]
-              JwtDenylist.create(jti: jti, exp: Time.at(exp))
+            if token.nil?
+                render json: { message: "Sesión cerrada correctamente" }, status: :ok
+                return
             end
-          end
-          render json: { message: "Sesión cerrada correctamente" }, status: :ok
-        end
+
+            begin
+                decoded = JWT.decode(
+                token,
+                Rails.application.credentials.devise_jwt_secret_key,
+                true,
+                algorithm: "HS256"
+                )
+
+                jti = decoded.first["jti"]
+                exp = decoded.first["exp"]
+
+                unless JwtDenylist.exists?(jti: jti)
+                JwtDenylist.create!(jti: jti, exp: Time.at(exp))
+                end
+
+            rescue JWT::DecodeError
+                # Token inválido o expirado, no importa — igual cerramos sesión
+            end
+
+            render json: { message: "Sesión cerrada correctamente" }, status: :ok
+            end
 
         private
 
