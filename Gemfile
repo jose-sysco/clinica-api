@@ -38,6 +38,33 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem 'rspec-rails'
+  gem 'factory_bot_rails'
+  gem 'faker'
 end
 
+
+# Auth
+gem 'devise'
+gem 'devise-jwt'
+
+# Multitenant
+gem 'acts_as_tenant'
+
+# Autorizacion
+gem 'pundit'
+
+# Background jobs
+gem 'sidekiq'
+gem 'redis'
+
+# Paginacion
+gem 'pagy'
+
+# CORS para desarrollo
+gem 'rack-cors'
+
+# Serializers
+gem 'jsonapi-serializer'
 
