@@ -20,15 +20,31 @@ class ApplicationController < ActionController::API
         true,
         algorithm: "HS256"
       )
+
       jti = decoded.first["jti"]
       user_id = decoded.first["sub"]
+      org_id = decoded.first["org"]
 
       if JwtDenylist.exists?(jti: jti)
         render json: { error: "Token revocado" }, status: :unauthorized
         return
       end
 
-      @current_user = User.find(user_id)
+      # Verificar que el token pertenece realmente a la organizacion 
+      organization = Organization.find_by(slug: request.headers["X-Organization-Slug"])
+
+      if organization.nil? || organization.id != org_id
+        render json: { error: "Token inválido para esta solicitud"}, status: :unauthorized
+        return
+      end
+
+      @current_user = User.find_by(id: user_id, organization_id: org_id)
+
+      if @current_user.nil?
+        render json: { error: "Usuario no encontrado"}, status: unauthorized
+        return
+      end
+
     rescue JWT::DecodeError, ActiveRecord::RecordNotFound
       render json: { error: "Token inválido" }, status: :unauthorized
     end

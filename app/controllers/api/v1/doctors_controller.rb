@@ -58,8 +58,8 @@ module Api
         {
           id:          schedule.id,
           day_of_week: schedule.day_of_week,
-          start_time:  schedule.start_time,
-          end_time:    schedule.end_time,
+          start_time:  schedule.start_time.strftime("%H:%M"),
+          end_time:    schedule.end_time.strftime("%H:%M"),
           is_active:   schedule.is_active
         }
       end

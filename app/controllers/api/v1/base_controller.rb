@@ -10,7 +10,7 @@ module Api
             private
 
             def not_found
-                render json: { error: e.message}, status: :not_found
+                render json: { error: "Recurso no encontrado"}, status: :not_found
             end
 
             def unprocessable_entity
