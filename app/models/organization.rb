@@ -10,18 +10,8 @@ class Organization < ApplicationRecord
   has_many :notifications,  dependent: :destroy
 
   # Enums
-  enum clinic_type: {
-    veterinary: 0,
-    pediatric:  1,
-    general:    2,
-    dental:     3
-  }
-
-  enum status: {
-    active:    0,
-    inactive:  1,
-    suspended: 2
-  }
+  enum :clinic_type, { veterinary: 0, pediatric: 1, general: 2, dental: 3 }
+  enum :status, { active: 0, inactive: 1, suspended: 2 }
 
   # Validaciones
   validates :name,      presence: true
@@ -38,6 +28,13 @@ class Organization < ApplicationRecord
   private
 
   def generate_slug
-    self.slug = name.downcase.gsub(/\s+/, '-').gsub(/[^a-z0-9\-]/, '')
+    self.slug = name
+      .unicode_normalize(:nfd)
+      .gsub(/\p{Mn}/, '')
+      .downcase
+      .gsub(/[^a-z0-9\s\-]/, '')
+      .gsub(/\s+/, '-')
+      .gsub(/-+/, '-')
+      .strip
   end
 end

@@ -8,22 +8,9 @@ class Patient < ApplicationRecord
   has_many   :appointments, dependent: :destroy
 
   # Enums
-  enum patient_type: {
-    human:  0,
-    animal: 1
-  }
-
-  enum gender: {
-    unknown: 0,
-    male:    1,
-    female:  2
-  }
-
-  enum status: {
-    active:   0,
-    inactive: 1,
-    deceased: 2
-  }
+  enum :patient_type, { human: 0, animal: 1 }
+  enum :gender, { unknown: 0, male: 1, female: 2 }
+  enum :status, { active: 0, inactive: 1, deceased: 2 }
 
   # Validaciones
   validates :name,         presence: true

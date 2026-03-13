@@ -1,21 +1,14 @@
 Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
+
       # Auth
-      devise_for :users,
-        path: 'auth',
-        path_names: {
-          sign_in:  'sign_in',
-          sign_out: 'sign_out',
-          registration: 'sign_up'
-        },
-        controllers: {
-          sessions:      'api/v1/auth/sessions',
-          registrations: 'api/v1/auth/registrations'
-        }
+      post   'auth/sign_up',  to: 'auth/registrations#create'
+      post   'auth/sign_in',  to: 'auth/sessions#create'
+      delete 'auth/sign_out', to: 'auth/sessions#destroy'
 
       # Organizations
-      resource :organization, only: [:show, :create, :update]
+      resource :organization, only: [:show, :update]
 
       # Doctors
       resources :doctors, only: [:index, :show, :create, :update, :destroy] do
@@ -45,6 +38,7 @@ Rails.application.routes.draw do
           patch :mark_all_as_read
         end
       end
+
     end
   end
 end

@@ -48,6 +48,7 @@ end
 # Auth
 gem 'devise'
 gem 'devise-jwt'
+gem 'jwt'
 
 # Multitenant
 gem 'acts_as_tenant'

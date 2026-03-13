@@ -1,36 +1,70 @@
 module Api
-    module V1
-        module Auth
-            class RegistrationsController < Devise::RegistrationsController
-                respond_to :json
+  module V1
+    module Auth
+      class RegistrationsController < ApplicationController
+        skip_before_action :authenticate_user!
+        skip_before_action :set_tenant
 
-                skip_before_action :authenticate_user!, only: [:create]
+        def create
+          ActiveRecord::Base.transaction do
+            @organization = Organization.new(organization_params)
+            @organization.save!
 
-                private 
+            @user = User.new(user_params)
+            @user.organization = @organization
+            @user.role = :admin
+            @user.status = :active
+            @user.save!
+          end
 
-                def respond_with(resource, _opts = {})
-                    if resource.persisted?
-                        render json: {
-                            message: "Usuario creado correctamente",
-                            user: {
-                                id: resource.id,
-                                email: resource.email,
-                                full_name: resource.full_name,
-                                role: resource.role,
-                            }
-                        }, status: :created
-                    else
-                        render json { errors: resource.errors.full_messages}, status: :unprocessable_entity
-                    end
-                end
+          render json: {
+            message: "Registro exitoso",
+            organization: organization_json(@organization),
+            user: user_json(@user)
+          }, status: :created
 
-                def sign_up_params
-                    params.require(:user).permit(
-                        :email, :password, :password_confirmation,
-                        :first_name, :last_name, :phone, :role
-                    )
-                end
-            end
+        rescue ActiveRecord::RecordInvalid => e
+          render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
         end
+
+        private
+
+        def organization_params
+          params.require(:organization).permit(
+            :name, :subdomain, :email, :phone,
+            :address, :city, :country, :timezone, :clinic_type
+          )
+        end
+
+        def user_params
+          params.require(:user).permit(
+            :first_name, :last_name, :email, :phone,
+            :password, :password_confirmation
+          )
+        end
+
+        def organization_json(org)
+          {
+            id:          org.id,
+            name:        org.name,
+            slug:        org.slug,
+            subdomain:   org.subdomain,
+            email:       org.email,
+            clinic_type: org.clinic_type,
+            status:      org.status
+          }
+        end
+
+        def user_json(user)
+          {
+            id:        user.id,
+            email:     user.email,
+            full_name: user.full_name,
+            role:      user.role,
+            status:    user.status
+          }
+        end
+      end
     end
+  end
 end

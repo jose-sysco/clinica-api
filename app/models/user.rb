@@ -13,18 +13,8 @@ class User < ApplicationRecord
   has_one    :owner
 
   # Enums
-  enum role: {
-    admin:        0,
-    doctor:       1,
-    receptionist: 2,
-    patient:      3
-  }
-
-  enum status: {
-    active:   0,
-    inactive: 1,
-    banned:   2
-  }
+  enum :role, { admin: 0, doctor: 1, receptionist: 2, patient: 3 }
+  enum :status, { active: 0, inactive: 1, banned: 2 }
 
   # Validaciones
   validates :first_name, presence: true

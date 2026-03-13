@@ -8,25 +8,9 @@ class Notification < ApplicationRecord
   belongs_to :appointment
 
   # Enums
-  enum notification_type: {
-    confirmation: 0,
-    reminder:     1,
-    cancellation: 2,
-    reschedule:   3
-  }
-
-  enum channel: {
-    email: 0,
-    sms:   1,
-    push:  2
-  }
-
-  enum status: {
-    pending: 0,
-    sent:    1,
-    failed:  2,
-    read:    3
-  }
+  enum :notification_type, { confirmation: 0, reminder: 1, cancellation: 2, reschedule: 3 }
+  enum :channel, { email: 0, sms: 1, push: 2 }
+  enum :status, { pending: 0, sent: 1, failed: 2, read: 3 }
 
   # Validaciones
   validates :notification_type, presence: true

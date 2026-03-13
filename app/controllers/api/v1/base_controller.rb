@@ -5,7 +5,7 @@ module Api
             
             rescue_from ActiveRecord::RecordNotFound, with: :not_found
             rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_entity
-            rescue_from ActsAsTenant::NoTenantSet, with: :tenant_not_set
+            rescue_from ActsAsTenant::Errors::NoTenantSet, with: :tenant_not_set
             
             private
 

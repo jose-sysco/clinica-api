@@ -10,11 +10,7 @@ class Doctor < ApplicationRecord
   has_many   :appointments,    dependent: :destroy
 
   # Enums
-  enum status: {
-    active:   0,
-    inactive: 1,
-    on_leave: 2
-  }
+  enum :status, { active: 0, inactive: 1, on_leave: 2 }
 
   # Validaciones
   validates :specialty,            presence: true

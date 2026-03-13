@@ -9,27 +9,9 @@ class Appointment < ApplicationRecord
   belongs_to :owner
 
   # Enums
-  enum status: {
-    pending:     0,
-    confirmed:   1,
-    in_progress: 2,
-    completed:   3,
-    cancelled:   4,
-    no_show:     5
-  }
-
-  enum appointment_type: {
-    first_visit:  0,
-    follow_up:    1,
-    emergency:    2,
-    routine:      3
-  }
-
-  enum cancelled_by: {
-    cancelled_by_patient: 0,
-    cancelled_by_doctor:  1,
-    cancelled_by_system:  2
-  }
+  enum :status, { pending: 0, confirmed: 1, in_progress: 2, completed: 3, cancelled: 4, no_show: 5 }
+  enum :appointment_type, { first_visit: 0, follow_up: 1, emergency: 2, routine: 3 }
+  enum :cancelled_by, { cancelled_by_patient: 0, cancelled_by_doctor: 1, cancelled_by_system: 2 }
 
   # Validaciones
   validates :scheduled_at,      presence: true
