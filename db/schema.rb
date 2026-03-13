@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_13_060154) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_13_062052) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -52,6 +52,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_13_060154) do
     t.index ["license_number"], name: "index_doctors_on_license_number", unique: true
     t.index ["organization_id"], name: "index_doctors_on_organization_id"
     t.index ["user_id"], name: "index_doctors_on_user_id"
+  end
+
+  create_table "jwt_denylist", force: :cascade do |t|
+    t.string "jti", null: false
+    t.datetime "exp", null: false
+    t.index ["jti"], name: "index_jwt_denylist_on_jti", unique: true
   end
 
   create_table "notifications", force: :cascade do |t|
