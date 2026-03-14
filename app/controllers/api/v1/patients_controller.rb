@@ -8,7 +8,13 @@ module Api
         authorize Patient, policy_class: PatientPolicy
         patients = @owner.patients
         patients = patients.search(params[:q]) if params[:q].present?
-        render json: patients.map { |p| patient_json(p) }
+
+        pagy, patients = pagy(patients, limit: params[:per_page] || 20)
+
+        render json: {
+          data:       patients.map { |p| patient_json(p) },
+          pagination: pagy_metadata(pagy)
+        }
       end
 
       def show
