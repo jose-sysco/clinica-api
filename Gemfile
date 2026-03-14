@@ -42,6 +42,7 @@ group :development, :test do
   gem 'rspec-rails'
   gem 'factory_bot_rails'
   gem 'faker'
+  gem 'rswag-specs'
 end
 
 
@@ -69,3 +70,6 @@ gem 'rack-cors'
 # Serializers
 gem 'jsonapi-serializer'
 
+# Documentacion de API
+gem 'rswag-api'
+gem 'rswag-ui'
