@@ -51,7 +51,7 @@ class ApplicationPolicy
     user.doctor?
   end
 
-  def receptionist
+  def receptionist?
     user.receptionist?
   end
 

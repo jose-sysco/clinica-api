@@ -13,7 +13,7 @@ class User < ApplicationRecord
   has_one    :owner
 
   # Enums
-  enum :role, { admin: 0, doctor: 1, receptionist: 2, patient: 3 }
+  enum :role,   { admin: 0, doctor: 1, receptionist: 2, patient: 3 }
   enum :status, { active: 0, inactive: 1, banned: 2 }
 
   # Validaciones
@@ -23,16 +23,32 @@ class User < ApplicationRecord
   validates :status,     presence: true
 
   # Scopes
-  scope :active,   -> { where(status: :active) }
-  scope :doctors,  -> { where(role: :doctor) }
-  scope :patients, -> { where(role: :patient) }
+  scope :active_users, -> { where(status: :active) }
+  scope :doctors,      -> { where(role: :doctor) }
+  scope :patients,     -> { where(role: :patient) }
 
   # Helpers
   def full_name
     "#{first_name} #{last_name}"
   end
 
-  def active?
+  def admin?
+    role == "admin"
+  end
+
+  def doctor?
+    role == "doctor"
+  end
+
+  def receptionist?
+    role == "receptionist"
+  end
+
+  def patient?
+    role == "patient"
+  end
+
+  def active_user?
     status == "active"
   end
 end

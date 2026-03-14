@@ -4,6 +4,7 @@ module Api
       before_action :set_appointment, only: [:show, :update, :cancel, :confirm]
 
       def index
+        authorize Appointment, policy_class: AppointmentPolicy
         appointments = Appointment.includes(:doctor, :patient, :owner)
         appointments = appointments.for_doctor(params[:doctor_id]) if params[:doctor_id].present?
         appointments = appointments.for_patient(params[:patient_id]) if params[:patient_id].present?
@@ -13,21 +14,25 @@ module Api
       end
 
       def show
+        authorize @appointment, policy_class: AppointmentPolicy
         render json: appointment_json(@appointment)
       end
 
       def create
+        authorize Appointment, policy_class: AppointmentPolicy
         appointment = Appointment.new(appointment_params)
         appointment.save!
         render json: appointment_json(appointment), status: :created
       end
 
       def update
+        authorize @appointment, policy_class: AppointmentPolicy
         @appointment.update!(appointment_params)
         render json: appointment_json(@appointment)
       end
 
       def confirm
+        authorize @appointment, policy_class: AppointmentPolicy
         if !@appointment.cancelled?
           @appointment.confirmed!
           render json: { message: "Cita confirmada correctamente" }, status: :ok

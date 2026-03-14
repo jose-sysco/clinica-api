@@ -4,27 +4,32 @@ module Api
       before_action :set_owner, only: [:show, :update, :destroy]
 
       def index
+        authorize Owner, policy_class: OwnerPolicy
         owners = Owner.all
         owners = owners.search(params[:q]) if params[:q].present?
         render json: owners.map { |o| owner_json(o) }
       end
 
       def show
+        authorize @owner, policy_class: OwnerPolicy
         render json: owner_json(@owner)
       end
 
       def create
+        authorize Owner, policy_class: OwnerPolicy
         owner = Owner.new(owner_params)
         owner.save!
         render json: owner_json(owner), status: :created
       end
 
       def update
+        authorize @owner, policy_class: OwnerPolicy
         @owner.update!(owner_params)
         render json: owner_json(@owner)
       end
 
       def destroy
+        authorize @owner, policy_class: OwnerPolicy
         @owner.destroy!
         render json: { message: "Propietario eliminado correctamente" }
       end

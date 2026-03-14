@@ -5,6 +5,7 @@ module Api
       skip_before_action :set_tenant,         only: [:create]
 
       def show
+        authorize ActsAsTenant.current_tenant, policy_class: OrganizationPolicy
         render json: organization_json(ActsAsTenant.current_tenant)
       end
 
@@ -15,6 +16,7 @@ module Api
       end
 
       def update
+        authorize ActsAsTenant.current_tenant, policy_class: OrganizationPolicy
         ActsAsTenant.current_tenant.update!(organization_params)
         render json: organization_json(ActsAsTenant.current_tenant)
       end

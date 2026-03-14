@@ -4,26 +4,31 @@ module Api
       before_action :set_doctor, only: [:show, :update, :destroy]
 
       def index
+        authorize Doctor, policy_class: DoctorPolicy
         doctors = Doctor.active.includes(:user, :schedules)
         render json: doctors.map { |d| doctor_json(d) }
       end
 
       def show
+        authorize @doctor, policy_class: DoctorPolicy
         render json: doctor_json(@doctor)
       end
 
       def create
+        authorize Doctor, policy_class: DoctorPolicy
         doctor = Doctor.new(doctor_params)
         doctor.save!
         render json: doctor_json(doctor), status: :created
       end
 
       def update
+        authorize @doctor, policy_class: DoctorPolicy
         @doctor.update!(doctor_params)
         render json: doctor_json(@doctor)
       end
 
       def destroy
+        authorize @doctor, policy_class: DoctorPolicy
         @doctor.update!(status: :inactive)
         render json: { message: "Doctor desactivado correctamente" }
       end
