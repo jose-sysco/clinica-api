@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+  <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2 style="color: #e74c3c;">❌ Cita Cancelada</h2>
+    <p>Hola <strong><%= @owner.full_name %></strong>,</p>
+    <p>Tu cita ha sido cancelada.</p>
+
+    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+      <h3 style="margin-top: 0;">Detalles de la cita cancelada</h3>
+      <p><strong>Paciente:</strong> <%= @patient.name %></p>
+      <p><strong>Doctor:</strong> <%= @doctor.full_name %></p>
+      <p><strong>Fecha:</strong> <%= @appointment.scheduled_at.strftime("%d/%m/%Y") %></p>
+      <p><strong>Hora:</strong> <%= @appointment.scheduled_at.strftime("%H:%M") %></p>
+    </div>
+
+    <p>Si deseas reagendar tu cita, no dudes en contactarnos.</p>
+    <p>— <%= @organization.name %></p>
+  </body>
+</html>

@@ -39,6 +39,10 @@ class Appointment < ApplicationRecord
   scope :by_date,     ->(date) { where(scheduled_at: date.to_date.beginning_of_day..date.to_date.end_of_day) }
   scope :by_range,    ->(from, to) { where(scheduled_at: from.to_date.beginning_of_day..to.to_date.end_of_day) }
 
+  # Disparar los jobs desde el modelo
+  after_create_commit :schedule_confirmation
+  after_update_commit :handle_status_change
+
   private
 
   def ends_at_after_scheduled_at
@@ -91,5 +95,20 @@ class Appointment < ApplicationRecord
 
   def set_confirmed_at
     self.confirmed_at = Time.current
+  end
+
+  def schedule_confirmation
+    AppointmentConfirmationJob.perform_later(id)
+  end
+
+  def handle_status_change
+    return unless saved_change_to_status?
+
+    case status
+    when "confirmed"
+      AppointmentConfirmationJob.perform_later(id)
+    when "cancelled"
+      AppointmentCancellationJob.perform_later(id)
+    end
   end
 end

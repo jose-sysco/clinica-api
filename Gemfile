@@ -74,3 +74,7 @@ gem 'jsonapi-serializer'
 # Documentacion de API
 gem 'rswag-api'
 gem 'rswag-ui'
+
+group :development do
+  gem 'letter_opener'
+end
