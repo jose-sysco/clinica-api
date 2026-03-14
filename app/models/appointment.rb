@@ -114,6 +114,9 @@ class Appointment < ApplicationRecord
   end
 
   def valid_status_transition
+    return if new_record?
+    return unless status_changed?
+
     allowed = {
       "pending" => ["confirmed", "cancelled"],
       "confirmed" => ["in_progress", "cancelled"],
@@ -124,7 +127,7 @@ class Appointment < ApplicationRecord
     }
 
     unless allowed[status_was]&.include?(status)
-      errors.add(:status, "no puede cambiar de '#{status_was}' a '#{status}")
+      errors.add(:status, "no puede cambiar de '#{status_was}' a '#{status}'")
     end
   end
 end
