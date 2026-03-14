@@ -44,6 +44,11 @@ Rails.application.routes.draw do
         end
       end
 
+      # Perfil de usuario 
+      get 'me', to: 'users#me'
+      patch 'me', to: 'users#update_me'
+      patch 'me/change_password', to: 'users#change_password'
+
     end
   end
   match '*unmatched', to: 'errors#not_found', via: :all
