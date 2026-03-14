@@ -8,23 +8,25 @@ module Api
 
         appointments = Appointment.includes(:doctor, :patient, :owner)
 
-        # Filtros existentes
-        appointments = appointments.for_doctor(params[:doctor_id])   if params[:doctor_id].present?
-        appointments = appointments.for_patient(params[:patient_id]) if params[:patient_id].present?
-        appointments = appointments.today                            if params[:today] == "true"
-        appointments = appointments.upcoming                         if params[:upcoming] == "true"
-        appointments = appointments.past                             if params[:past] == "true"
-
-        # Filtros nuevos
-        appointments = appointments.by_status(params[:status])       if params[:status].present?
-        appointments = appointments.by_type(params[:appointment_type]) if params[:appointment_type].present?
-        appointments = appointments.by_date(params[:date])           if params[:date].present?
+        appointments = appointments.for_doctor(params[:doctor_id])      if params[:doctor_id].present?
+        appointments = appointments.for_patient(params[:patient_id])    if params[:patient_id].present?
+        appointments = appointments.today                               if params[:today] == "true"
+        appointments = appointments.upcoming                            if params[:upcoming] == "true"
+        appointments = appointments.past                               if params[:past] == "true"
+        appointments = appointments.by_status(params[:status])          if params[:status].present?
+        appointments = appointments.by_type(params[:appointment_type])  if params[:appointment_type].present?
+        appointments = appointments.by_date(params[:date])              if params[:date].present?
 
         if params[:from].present? && params[:to].present?
           appointments = appointments.by_range(params[:from], params[:to])
         end
 
-        render json: appointments.map { |a| appointment_json(a) }
+        pagy, appointments = pagy(appointments, limit: params[:per_page] || 20)
+
+        render json: {
+          data:       appointments.map { |a| appointment_json(a) },
+          pagination: pagy_metadata(pagy)
+        }
       end
 
       def show
