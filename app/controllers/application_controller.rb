@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::API
   include ActsAsTenant::ControllerExtensions
   include Pundit::Authorization
+  include Pagy::Backend
 
   before_action :authenticate_user!
   before_action :set_tenant
