@@ -5,11 +5,25 @@ module Api
 
       def index
         authorize Appointment, policy_class: AppointmentPolicy
+
         appointments = Appointment.includes(:doctor, :patient, :owner)
-        appointments = appointments.for_doctor(params[:doctor_id]) if params[:doctor_id].present?
+
+        # Filtros existentes
+        appointments = appointments.for_doctor(params[:doctor_id])   if params[:doctor_id].present?
         appointments = appointments.for_patient(params[:patient_id]) if params[:patient_id].present?
-        appointments = appointments.today if params[:today].present?
-        appointments = appointments.upcoming if params[:upcoming].present?
+        appointments = appointments.today                            if params[:today] == "true"
+        appointments = appointments.upcoming                         if params[:upcoming] == "true"
+        appointments = appointments.past                             if params[:past] == "true"
+
+        # Filtros nuevos
+        appointments = appointments.by_status(params[:status])       if params[:status].present?
+        appointments = appointments.by_type(params[:appointment_type]) if params[:appointment_type].present?
+        appointments = appointments.by_date(params[:date])           if params[:date].present?
+
+        if params[:from].present? && params[:to].present?
+          appointments = appointments.by_range(params[:from], params[:to])
+        end
+
         render json: appointments.map { |a| appointment_json(a) }
       end
 

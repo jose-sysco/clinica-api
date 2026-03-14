@@ -14,6 +14,9 @@ Rails.application.routes.draw do
       resources :doctors, only: [:index, :show, :create, :update, :destroy] do
         resources :schedules,       only: [:index, :create, :update, :destroy]
         resources :schedule_blocks, only: [:index, :create, :destroy]
+        member do 
+          get :availability
+        end
       end
 
       # Owners y Patients

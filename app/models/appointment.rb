@@ -34,6 +34,10 @@ class Appointment < ApplicationRecord
   scope :today,      -> { where(scheduled_at: Time.current.beginning_of_day..Time.current.end_of_day) }
   scope :for_doctor, ->(doctor_id) { where(doctor_id: doctor_id) }
   scope :for_patient, ->(patient_id) { where(patient_id: patient_id) }
+  scope :by_status,   ->(status) { where(status: status) }
+  scope :by_type,     ->(type) { where(appointment_type: type) }
+  scope :by_date,     ->(date) { where(scheduled_at: date.to_date.beginning_of_day..date.to_date.end_of_day) }
+  scope :by_range,    ->(from, to) { where(scheduled_at: from.to_date.beginning_of_day..to.to_date.end_of_day) }
 
   private
 

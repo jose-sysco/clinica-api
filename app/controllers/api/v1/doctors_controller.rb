@@ -1,7 +1,7 @@
 module Api
   module V1
     class DoctorsController < BaseController
-      before_action :set_doctor, only: [:show, :update, :destroy]
+      before_action :set_doctor, only: [:show, :update, :destroy, :availability]
 
       def index
         authorize Doctor, policy_class: DoctorPolicy
@@ -31,6 +31,42 @@ module Api
         authorize @doctor, policy_class: DoctorPolicy
         @doctor.update!(status: :inactive)
         render json: { message: "Doctor desactivado correctamente" }
+      end
+
+      def availability
+        date = params[:date]
+
+        if date.blank?
+          render json: { errors: "El parámetro date es requerido (YYYY-MM-DD)" }, status: :bad_request
+          return 
+        end
+
+        begin 
+          parsed_date = Date.parse(date)
+        rescue ArgumentError
+          render json: { error: "Formato de fecha inválido, usa YYYY-MM-DD" }, status: :bad_request
+          return 
+        end
+
+        if parsed_date < Date.today
+          render json: {error: "No puedes consultar disponibilidad en fechas pasadas"}, status: :bad_request
+          return 
+        end
+
+        slots = DoctorAvailabilityService.new(@doctor, parsed_date).call
+
+        render json: {
+          doctor: {id: @doctor.id, full_name: @doctor.full_name },
+          date: parsed_date,
+          day: parsed_date.strftime("%A"),
+          slots: slots.map { |s|
+            {
+              starts_at: s[:starts_at].strftime("%H:%M"),
+              ends_at:   s[:ends_at].strftime("%H:%M"),
+            }
+          },
+          total_available: slots.count
+        }
       end
 
       private
