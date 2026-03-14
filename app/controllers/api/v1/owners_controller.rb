@@ -7,7 +7,13 @@ module Api
         authorize Owner, policy_class: OwnerPolicy
         owners = Owner.all
         owners = owners.search(params[:q]) if params[:q].present?
-        render json: owners.map { |o| owner_json(o) }
+
+        pagy, owners = pagy(owners, limit: params[:per_page] || 20)
+
+        render json: {
+          data:       owners.map { |o| owner_json(o) },
+          pagination: pagy_metadata(pagy)
+        }
       end
 
       def show
