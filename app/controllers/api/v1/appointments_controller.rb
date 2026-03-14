@@ -28,8 +28,12 @@ module Api
       end
 
       def confirm
-        @appointment.confirmed!
-        render json: { message: "Cita confirmada correctamente" }
+        if !@appointment.cancelled?
+          @appointment.confirmed!
+          render json: { message: "Cita confirmada correctamente" }, status: :ok
+        else
+          render json: { error: "Cita cancelada" }, status: :unprocessable_entity
+        end
       end
 
       def cancel
