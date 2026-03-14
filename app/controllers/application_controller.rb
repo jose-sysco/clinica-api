@@ -1,10 +1,12 @@
 class ApplicationController < ActionController::API
   include ActsAsTenant::ControllerExtensions
+  include Pundit::Authorization
 
   before_action :authenticate_user!
   before_action :set_tenant
 
   rescue_from StandardError, with: :internal_server_error
+  rescue_from Pundit::NotAuthorizedError, with: :forbidden
 
   private
 
@@ -82,5 +84,9 @@ class ApplicationController < ActionController::API
     Rails.logger.error error.message
     Rails.logger.error error.backtrace.join("\n")
     render json: { error: "Error interno del servidor" }, status: :internal_server_error
+  end
+
+  def forbidden
+    render json: { error: "No tienes permisos para realizar esta acción" }, status: :forbidden
   end
 end
