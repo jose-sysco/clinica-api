@@ -61,7 +61,7 @@ gem 'sidekiq'
 gem 'redis'
 
 # Paginacion
-gem 'pagy'
+gem 'pagy', '~> 9.0'
 
 # CORS para desarrollo
 gem 'rack-cors'
