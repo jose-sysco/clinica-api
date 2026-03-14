@@ -69,12 +69,12 @@ module Api
         def generate_jwt(user)
           jti = SecureRandom.uuid
           payload = {
-            sub:  user.id.to_s,
-            jti:  jti,
-            exp:  24.hours.from_now.to_i,
-            org:  user.organization_id
+            sub: user.id.to_s,
+            jti: jti,
+            exp: 24.hours.from_now.to_i,
+            org: user.organization_id
           }
-          JWT.encode(payload, Rails.application.credentials.devise_jwt_secret_key, "HS256")
+          JWT.encode(payload, ENV['DEVISE_JWT_SECRET_KEY'] || Rails.application.credentials.devise_jwt_secret_key, "HS256")
         end
       end
     end

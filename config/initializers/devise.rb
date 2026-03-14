@@ -315,7 +315,7 @@ Devise.setup do |config|
   # config.sign_in_after_change_password = true
 
   config.jwt do |jwt|
-    jwt.secret = Rails.application.credentials.devise_jwt_secret_key
+    jwt.secret = ENV['DEVISE_JWT_SECRET_KEY'] || Rails.application.credentials.devise_jwt_secret_key
     jwt.dispatch_requests = []
     jwt.revocation_requests = []
     jwt.expiration_time = 24.hours.to_i
