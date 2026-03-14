@@ -4,10 +4,13 @@ class ApplicationController < ActionController::API
   before_action :authenticate_user!
   before_action :set_tenant
 
+  rescue_from StandardError, with: :internal_server_error
+
   private
 
   def authenticate_user!
     token = request.headers["Authorization"]&.split(" ")&.last
+
     if token.nil?
       render json: { error: "Token no proporcionado" }, status: :unauthorized
       return
@@ -21,31 +24,30 @@ class ApplicationController < ActionController::API
         algorithm: "HS256"
       )
 
-      jti = decoded.first["jti"]
+      jti     = decoded.first["jti"]
       user_id = decoded.first["sub"]
-      org_id = decoded.first["org"]
+      org_id  = decoded.first["org"]
 
       if JwtDenylist.exists?(jti: jti)
         render json: { error: "Token revocado" }, status: :unauthorized
         return
       end
 
-      # Verificar que el token pertenece realmente a la organizacion 
-      organization = Organization.find_by(slug: request.headers["X-Organization-Slug"])
+      organization = Organization.find_by(slug: request.headers["X-Organization-Slug"], status: :active)
 
       if organization.nil? || organization.id != org_id
-        render json: { error: "Token inválido para esta solicitud"}, status: :unauthorized
+        render json: { error: "Token no válido para esta organización" }, status: :unauthorized
         return
       end
 
       @current_user = User.find_by(id: user_id, organization_id: org_id)
 
       if @current_user.nil?
-        render json: { error: "Usuario no encontrado"}, status: unauthorized
+        render json: { error: "Usuario no encontrado" }, status: :unauthorized
         return
       end
 
-    rescue JWT::DecodeError, ActiveRecord::RecordNotFound
+    rescue JWT::DecodeError
       render json: { error: "Token inválido" }, status: :unauthorized
     end
   end
@@ -56,6 +58,7 @@ class ApplicationController < ActionController::API
 
   def set_tenant
     organization = find_organization
+
     if organization.nil?
       render json: { error: "Organización no encontrada" }, status: :not_found
       return
@@ -73,10 +76,6 @@ class ApplicationController < ActionController::API
     slug = request.headers["X-Organization-Slug"]
     return nil if slug.blank?
     Organization.find_by(slug: slug, status: :active)
-  end
-
-  def not_found
-    render json: { error: "Ruta no encontrada" }, status: :not_found
   end
 
   def internal_server_error(error)
