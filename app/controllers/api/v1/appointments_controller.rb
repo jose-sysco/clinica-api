@@ -49,18 +49,27 @@ module Api
 
       def confirm
         authorize @appointment, policy_class: AppointmentPolicy
-        if !@appointment.cancelled?
-          @appointment.confirmed!
-          render json: { message: "Cita confirmada correctamente" }, status: :ok
-        else
-          render json: { error: "Cita cancelada" }, status: :unprocessable_entity
+
+        if @appointment.confirmed?
+          render json: { error: "La cita ya está confirmada" }, status: :unprocessable_entity
+          return
         end
+
+        @appointment.confirmed!
+        render json: { message: "Cita confirmada correctamente" }, status: :ok
       end
 
       def cancel
+        authorize @appointment, policy_class: AppointmentPolicy
+
+        if @appointment.cancelled?
+          render json: { error: "La cita ya está cancelada" }, status: :unprocessable_entity
+          return
+        end
+
         @appointment.update!(
-          status: :cancelled,
-          cancelled_by: params[:cancelled_by],
+          status:              :cancelled,
+          cancelled_by:        params[:cancelled_by],
           cancellation_reason: params[:cancellation_reason]
         )
         render json: { message: "Cita cancelada correctamente" }

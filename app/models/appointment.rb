@@ -23,6 +23,7 @@ class Appointment < ApplicationRecord
   validate  :no_double_booking
   validate  :within_doctor_schedule
   validate  :doctor_not_blocked
+  validate  :valid_status_transition
 
   # Callbacks
   before_validation :set_ends_at, if: -> { scheduled_at.present? && ends_at.blank? }
@@ -109,6 +110,21 @@ class Appointment < ApplicationRecord
       AppointmentConfirmationJob.perform_later(id)
     when "cancelled"
       AppointmentCancellationJob.perform_later(id)
+    end
+  end
+
+  def valid_status_transition
+    allowed = {
+      "pending" => ["confirmed", "cancelled"],
+      "confirmed" => ["in_progress", "cancelled"],
+      "in_progress" => ["completed", "no_show"],
+      "completed" => [],
+      "cancelled" => [],
+      "no_show" => []
+    }
+
+    unless allowed[status_was]&.include?(status)
+      errors.add(:status, "no puede cambiar de '#{status_was}' a '#{status}")
     end
   end
 end
