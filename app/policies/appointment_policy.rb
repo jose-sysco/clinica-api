@@ -8,7 +8,7 @@ class AppointmentPolicy < ApplicationPolicy
   end
 
   def create?
-    admin? || receptionist?
+    admin? || receptionist? || doctor?
   end
 
   def update?
@@ -20,6 +20,10 @@ class AppointmentPolicy < ApplicationPolicy
   end
 
   def cancel?
+    admin? || receptionist? || doctor?
+  end
+
+  def complete?
     admin? || receptionist? || doctor?
   end
 end

@@ -27,6 +27,26 @@ module Api
           render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
         end
 
+        def create_staff
+          @user = User.new(staff_params)
+          @user.organization = ActsAsTenant.current_tenant
+          @user.status = :active
+          @user.save!
+
+          render json: {
+            message: "Usuario creado correctamente",
+            user: {
+              id:        @user.id,
+              email:     @user.email,
+              full_name: @user.full_name,
+              role:      @user.role
+            }
+          }, status: :created
+
+        rescue ActiveRecord::RecordInvalid => e
+          render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+        end
+
         private
 
         def organization_params
@@ -63,6 +83,13 @@ module Api
             role:      user.role,
             status:    user.status
           }
+        end
+
+        def staff_params
+          params.require(:user).permit(
+            :first_name, :last_name, :email, :phone,
+            :password, :password_confirmation, :role
+          )
         end
       end
     end

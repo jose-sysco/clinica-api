@@ -75,6 +75,18 @@ module Api
         render json: { message: "Cita cancelada correctamente" }
       end
 
+      def complete
+        authorize @appointment, policy_class: AppointmentPolicy
+
+        if @appointment.complete?
+          render json: { error: "La cita ya está completada" }, status: :unprocessable_entity
+          return
+        end
+
+        @appointment.completed!
+        render json: { message: "Cita completada correctamente" }, status: :ok
+      end
+
       private
 
       def set_appointment
@@ -92,8 +104,8 @@ module Api
       def appointment_json(appointment)
         {
           id:               appointment.id,
-          scheduled_at:     appointment.scheduled_at,
-          ends_at:          appointment.ends_at,
+          scheduled_at:     appointment.scheduled_at.in_time_zone(appointment.organization.timezone).strftime("%Y-%m-%dT%H:%M:%S"),
+          ends_at:          appointment.ends_at.in_time_zone(appointment.organization.timezone).strftime("%Y-%m-%dT%H:%M:%S"),
           status:           appointment.status,
           appointment_type: appointment.appointment_type,
           reason:           appointment.reason,

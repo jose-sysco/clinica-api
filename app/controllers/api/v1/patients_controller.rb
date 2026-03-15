@@ -1,14 +1,19 @@
 module Api
   module V1
     class PatientsController < BaseController
-      before_action :set_owner
+      before_action :set_owner, only: [:show, :update, :destroy, :create]
       before_action :set_patient, only: [:show, :update, :destroy]
 
       def index
         authorize Patient, policy_class: PatientPolicy
-        patients = @owner.patients
-        patients = patients.search(params[:q]) if params[:q].present?
 
+        patients = if params[:owner_id]
+          Owner.find(params[:owner_id]).patients
+        else
+          Patient.active.includes(:owner)
+        end
+
+        patients = patients.search(params[:q]) if params[:q].present?
         pagy, patients = pagy(patients, limit: params[:per_page] || 20)
 
         render json: {
@@ -18,25 +23,21 @@ module Api
       end
 
       def show
-        authorize @patient, policy_class: PatientPolicy
         render json: patient_json(@patient)
       end
 
       def create
-        authorize Patient, policy_class: PatientPolicy
         patient = @owner.patients.new(patient_params)
         patient.save!
         render json: patient_json(patient), status: :created
       end
 
       def update
-        authorize @patient, policy_class: PatientPolicy
         @patient.update!(patient_params)
         render json: patient_json(@patient)
       end
 
       def destroy
-        authorize @patient, policy_class: PatientPolicy
         @patient.update!(status: :inactive)
         render json: { message: "Paciente desactivado correctamente" }
       end
@@ -44,11 +45,11 @@ module Api
       private
 
       def set_owner
-        @owner = Owner.find(params[:owner_id])
+        @owner = Owner.find(params[:owner_id]) if params[:owner_id]
       end
 
       def set_patient
-        @patient = @owner.patients.find(params[:id])
+        @patient = @owner ? @owner.patients.find(params[:id]) : Patient.find(params[:id])
       end
 
       def patient_params

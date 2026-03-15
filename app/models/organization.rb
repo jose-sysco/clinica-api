@@ -24,6 +24,7 @@ class Organization < ApplicationRecord
 
   # Callbacks
   before_validation :generate_slug, if: -> { slug.blank? && name.present? }
+  before_validation :generate_subdomain, if: -> { subdomain.blank? && name.present? }
 
   private
 
@@ -36,5 +37,9 @@ class Organization < ApplicationRecord
       .gsub(/\s+/, '-')
       .gsub(/-+/, '-')
       .strip
+  end
+
+  def generate_subdomain
+    self.subdomain = slug
   end
 end

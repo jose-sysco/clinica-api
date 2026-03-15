@@ -8,6 +8,7 @@ Rails.application.routes.draw do
       post   'auth/sign_up',  to: 'auth/registrations#create'
       post   'auth/sign_in',  to: 'auth/sessions#create'
       delete 'auth/sign_out', to: 'auth/sessions#destroy'
+      post   'auth/sign_up_staff', to: 'auth/registrations#create_staff'
 
       # Organizations
       resource :organization, only: [:show, :update]
@@ -26,11 +27,14 @@ Rails.application.routes.draw do
         resources :patients, only: [:index, :show, :create, :update, :destroy]
       end
 
+      resources :patients, only: [:index]
+
       # Appointments
       resources :appointments, only: [:index, :show, :create, :update] do
         member do
           patch :confirm
           patch :cancel
+          patch :complete
         end
       end
 

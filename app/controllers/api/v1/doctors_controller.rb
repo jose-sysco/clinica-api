@@ -60,13 +60,13 @@ module Api
         slots = DoctorAvailabilityService.new(@doctor, parsed_date).call
 
         render json: {
-          doctor: {id: @doctor.id, full_name: @doctor.full_name },
-          date: parsed_date,
-          day: parsed_date.strftime("%A"),
-          slots: slots.map { |s|
+          doctor:   { id: @doctor.id, full_name: @doctor.full_name },
+          date:     parsed_date,
+          day:      parsed_date.strftime("%A"),
+          slots:    slots.map { |s|
             {
-              starts_at: s[:starts_at].strftime("%H:%M"),
-              ends_at:   s[:ends_at].strftime("%H:%M"),
+              starts_at: s[:starts_at].in_time_zone(ActsAsTenant.current_tenant.timezone).strftime("%H:%M"),
+              ends_at:   s[:ends_at].in_time_zone(ActsAsTenant.current_tenant.timezone).strftime("%H:%M")
             }
           },
           total_available: slots.count
