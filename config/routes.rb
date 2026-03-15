@@ -9,6 +9,8 @@ Rails.application.routes.draw do
       post   'auth/sign_in',  to: 'auth/sessions#create'
       delete 'auth/sign_out', to: 'auth/sessions#destroy'
       post   'auth/sign_up_staff', to: 'auth/registrations#create_staff'
+      post 'auth/forgot_password',  to: 'auth/passwords#forgot'
+      post 'auth/reset_password',  to: 'auth/passwords#reset'
 
       # Organizations
       resource :organization, only: [:show, :update]

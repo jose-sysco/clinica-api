@@ -320,4 +320,7 @@ Devise.setup do |config|
     jwt.revocation_requests = []
     jwt.expiration_time = 24.hours.to_i
   end
+
+  config.reset_password_within = 2.hours
+  config.reset_password_keys = [:email]
 end
