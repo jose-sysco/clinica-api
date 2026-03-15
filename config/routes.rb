@@ -27,7 +27,11 @@ Rails.application.routes.draw do
         resources :patients, only: [:index, :show, :create, :update, :destroy]
       end
 
-      resources :patients, only: [:index]
+      resources :patients, only: [:index] do 
+        resources :medical_records, only: [:index]
+      end
+
+      resources :medical_records, only: [:show, :create, :update]
 
       # Appointments
       resources :appointments, only: [:index, :show, :create, :update] do
@@ -53,6 +57,8 @@ Rails.application.routes.draw do
       patch 'me', to: 'users#update_me'
       patch 'me/change_password', to: 'users#change_password'
 
+      # Dashboards
+      get 'dashboard/stats', to: 'dashboard#stats'
     end
   end
   match '*unmatched', to: 'errors#not_found', via: :all

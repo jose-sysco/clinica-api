@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_15_163454) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_15_180952) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -58,6 +58,27 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_15_163454) do
     t.string "jti", null: false
     t.datetime "exp", null: false
     t.index ["jti"], name: "index_jwt_denylist_on_jti", unique: true
+  end
+
+  create_table "medical_records", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.integer "appointment_id", null: false
+    t.integer "patient_id", null: false
+    t.integer "doctor_id", null: false
+    t.decimal "weight", precision: 5, scale: 2
+    t.decimal "height", precision: 5, scale: 2
+    t.decimal "temperature", precision: 4, scale: 1
+    t.text "diagnosis"
+    t.text "treatment"
+    t.text "medications"
+    t.text "notes"
+    t.date "next_visit_date"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appointment_id"], name: "index_medical_records_on_appointment_id", unique: true
+    t.index ["doctor_id"], name: "index_medical_records_on_doctor_id"
+    t.index ["organization_id"], name: "index_medical_records_on_organization_id"
+    t.index ["patient_id"], name: "index_medical_records_on_patient_id"
   end
 
   create_table "notifications", force: :cascade do |t|

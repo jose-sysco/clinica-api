@@ -8,6 +8,7 @@ class Doctor < ApplicationRecord
   has_many   :schedules,       dependent: :destroy
   has_many   :schedule_blocks, dependent: :destroy
   has_many   :appointments,    dependent: :destroy
+  has_many :medical_records
 
   # Enums
   enum :status, { active: 0, inactive: 1, on_leave: 2 }

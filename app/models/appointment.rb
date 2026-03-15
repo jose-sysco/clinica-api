@@ -8,6 +8,8 @@ class Appointment < ApplicationRecord
   belongs_to :patient
   belongs_to :owner
 
+  has_one :medical_record
+
   # Enums
   enum :status, { pending: 0, confirmed: 1, in_progress: 2, completed: 3, cancelled: 4, no_show: 5 }
   enum :appointment_type, { first_visit: 0, follow_up: 1, emergency: 2, routine: 3 }

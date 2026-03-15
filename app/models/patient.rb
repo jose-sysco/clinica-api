@@ -6,6 +6,7 @@ class Patient < ApplicationRecord
   belongs_to :organization
   belongs_to :owner
   has_many   :appointments, dependent: :destroy
+  has_many   :medical_records, dependent: :destroy
 
   # Enums
   enum :patient_type, { human: 0, animal: 1 }
