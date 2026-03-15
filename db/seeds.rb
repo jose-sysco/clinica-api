@@ -12,7 +12,6 @@ Organization.destroy_all
 
 puts "🏥 Creando organizaciones..."
 
-# Organización 1 — Veterinaria
 veterinaria = Organization.create!(
   name:        "Clínica Veterinaria Patitas",
   subdomain:   "patitas",
@@ -25,7 +24,6 @@ veterinaria = Organization.create!(
   status:      :active
 )
 
-# Organización 2 — Pediatría
 pediatria = Organization.create!(
   name:        "Pediatría San José",
   subdomain:   "sanjose",
@@ -41,7 +39,6 @@ pediatria = Organization.create!(
 puts "👤 Creando usuarios..."
 
 ActsAsTenant.with_tenant(veterinaria) do
-  # Admin veterinaria
   admin_vet = User.create!(
     organization: veterinaria,
     first_name:   "Ana",
@@ -53,7 +50,6 @@ ActsAsTenant.with_tenant(veterinaria) do
     status:       :active
   )
 
-  # Doctor veterinaria
   doctor_vet_user = User.create!(
     organization: veterinaria,
     first_name:   "Roberto",
@@ -66,28 +62,26 @@ ActsAsTenant.with_tenant(veterinaria) do
   )
 
   doctor_vet = Doctor.create!(
-    organization:         veterinaria,
-    user:                 doctor_vet_user,
-    specialty:            "Medicina General Veterinaria",
-    license_number:       "VET-001",
-    bio:                  "Especialista en pequeñas especies con 10 años de experiencia.",
+    organization:          veterinaria,
+    user:                  doctor_vet_user,
+    specialty:             "Medicina General Veterinaria",
+    license_number:        "VET-001",
+    bio:                   "Especialista en pequeñas especies con 10 años de experiencia.",
     consultation_duration: 30,
-    status:               :active
+    status:                :active
   )
 
-  # Horarios doctor veterinaria (lunes a viernes)
   [1, 2, 3, 4, 5].each do |day|
     Schedule.create!(
       organization: veterinaria,
       doctor:       doctor_vet,
       day_of_week:  day,
-      start_time:   "08:00",
-      end_time:     "17:00",
+      start_time:   Time.new(2000, 1, 1, 8, 0, 0),
+      end_time:     Time.new(2000, 1, 1, 17, 0, 0),
       is_active:    true
     )
   end
 
-  # Recepcionista veterinaria
   User.create!(
     organization: veterinaria,
     first_name:   "María",
@@ -99,7 +93,6 @@ ActsAsTenant.with_tenant(veterinaria) do
     status:       :active
   )
 
-  # Owners y pacientes veterinaria
   owner1 = Owner.create!(
     organization:   veterinaria,
     first_name:     "Juan",
@@ -159,7 +152,6 @@ ActsAsTenant.with_tenant(veterinaria) do
 end
 
 ActsAsTenant.with_tenant(pediatria) do
-  # Admin pediatría
   User.create!(
     organization: pediatria,
     first_name:   "Carlos",
@@ -171,7 +163,6 @@ ActsAsTenant.with_tenant(pediatria) do
     status:       :active
   )
 
-  # Doctor pediatría
   doctor_ped_user = User.create!(
     organization: pediatria,
     first_name:   "Sofía",
@@ -184,28 +175,26 @@ ActsAsTenant.with_tenant(pediatria) do
   )
 
   doctor_ped = Doctor.create!(
-    organization:         pediatria,
-    user:                 doctor_ped_user,
-    specialty:            "Pediatría General",
-    license_number:       "PED-001",
-    bio:                  "Pediatra con enfoque en desarrollo infantil.",
+    organization:          pediatria,
+    user:                  doctor_ped_user,
+    specialty:             "Pediatría General",
+    license_number:        "PED-001",
+    bio:                   "Pediatra con enfoque en desarrollo infantil.",
     consultation_duration: 45,
-    status:               :active
+    status:                :active
   )
 
-  # Horarios doctor pediatría (lunes a sábado)
   [1, 2, 3, 4, 5, 6].each do |day|
     Schedule.create!(
       organization: pediatria,
       doctor:       doctor_ped,
       day_of_week:  day,
-      start_time:   "09:00",
-      end_time:     "18:00",
+      start_time:   Time.new(2000, 1, 1, 9, 0, 0),
+      end_time:     Time.new(2000, 1, 1, 18, 0, 0),
       is_active:    true
     )
   end
 
-  # Owner y paciente pediatría
   owner3 = Owner.create!(
     organization:   pediatria,
     first_name:     "Pedro",
@@ -236,7 +225,7 @@ puts "   #{Owner.count} propietarios"
 puts "   #{Patient.count} pacientes"
 puts ""
 puts "🔑 Credenciales de prueba:"
-puts "   Veterinaria → slug: patitas-clinica-veterinaria"
+puts "   Veterinaria → slug: clinica-veterinaria-patitas"
 puts "   Admin:       admin@patitas.com / password123"
 puts "   Doctor:      roberto@patitas.com / password123"
 puts ""
