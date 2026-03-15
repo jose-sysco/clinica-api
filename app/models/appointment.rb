@@ -121,7 +121,7 @@ class Appointment < ApplicationRecord
 
     allowed = {
       "pending" => ["confirmed", "cancelled"],
-      "confirmed" => ["in_progress", "cancelled"],
+      "confirmed" => ["in_progress", "cancelled", "completed"],
       "in_progress" => ["completed", "no_show"],
       "completed" => [],
       "cancelled" => [],

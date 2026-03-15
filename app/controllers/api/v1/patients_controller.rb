@@ -23,7 +23,9 @@ module Api
       end
 
       def show
-        render json: patient_json(@patient)
+        patient = Patient.find(params[:id])
+        authorize patient, policy_class: PatientPolicy
+        render json: patient_json(patient)
       end
 
       def create
