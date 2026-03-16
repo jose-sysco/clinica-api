@@ -33,6 +33,16 @@ module Api
           @user.status = :active
           @user.save!
 
+          if @user.role == 'doctor'
+            Doctor.create!(
+              organization: ActsAsTenant.current_tenant,
+              user: @user,
+              speciality: 'Pendiente de definir',
+              consultation_duration: 30,
+              status: :active
+            )
+          end
+
           render json: {
             message: "Usuario creado correctamente",
             user: {
