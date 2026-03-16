@@ -55,9 +55,14 @@ Rails.application.routes.draw do
       end
 
       # Perfil de usuario 
-      get 'me', to: 'users#me'
-      patch 'me', to: 'users#update_me'
-      patch 'me/change_password', to: 'users#change_password'
+      get    'me',                    to: 'users#me'
+      patch  'me',                    to: 'users#update_me'
+      patch  'me/change_password',    to: 'users#change_password'
+      resources :users, only: [:index, :show, :update] do
+        member do
+          patch :admin_change_password
+        end
+      end
 
       # Dashboards
       get 'dashboard/stats', to: 'dashboard#stats'

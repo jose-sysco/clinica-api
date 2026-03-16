@@ -90,6 +90,8 @@ module Api
         {
           id:                   doctor.id,
           full_name:            doctor.full_name,
+          email:                doctor.user.email,
+          phone:                doctor.user.phone,
           specialty:            doctor.specialty,
           license_number:       doctor.license_number,
           bio:                  doctor.bio,
