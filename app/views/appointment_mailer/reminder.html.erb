@@ -1,20 +1,74 @@
 <!DOCTYPE html>
 <html>
-  <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h2 style="color: #e67e22;">⏰ Recordatorio de Cita</h2>
-    <p>Hola <strong><%= @owner.full_name %></strong>,</p>
-    <p>Te recordamos que tienes una cita programada para <strong>mañana</strong>.</p>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 40px 20px;">
 
-    <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
-      <h3 style="margin-top: 0;">Detalles de la cita</h3>
-      <p><strong>Paciente:</strong> <%= @patient.name %></p>
-      <p><strong>Doctor:</strong> <%= @doctor.full_name %></p>
-      <p><strong>Fecha:</strong> <%= @appointment.scheduled_at.strftime("%d/%m/%Y") %></p>
-      <p><strong>Hora:</strong> <%= @appointment.scheduled_at.strftime("%H:%M") %></p>
-      <p><strong>Motivo:</strong> <%= @appointment.reason %></p>
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+    <!-- Header -->
+    <div style="background: #ea580c; padding: 32px 40px;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600;">
+        <%= @organization.name %>
+      </h1>
+      <p style="color: #fed7aa; margin: 8px 0 0 0; font-size: 14px;">
+        ⏰ Recordatorio de cita
+      </p>
     </div>
 
-    <p>Por favor llega 10 minutos antes de tu cita.</p>
-    <p>— <%= @organization.name %></p>
-  </body>
+    <!-- Contenido -->
+    <div style="padding: 40px;">
+      <h2 style="color: #0f172a; margin-top: 0; font-size: 22px;">
+        Tu cita es mañana
+      </h2>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+        Hola <strong style="color: #0f172a;"><%= @owner.full_name %></strong>,
+      </p>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+        Te recordamos que tienes una cita programada para <strong style="color: #0f172a;">mañana</strong> en <strong style="color: #0f172a;"><%= @organization.name %></strong>.
+      </p>
+
+      <!-- Card detalles -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
+        <p style="margin: 0 0 12px 0; font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+          Detalles de la cita
+        </p>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Paciente:</strong> <%= @patient.name %>
+        </p>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Doctor:</strong> <%= @doctor.full_name %>
+        </p>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Fecha:</strong> <%= @appointment.scheduled_at.in_time_zone(@organization.timezone).strftime("%d/%m/%Y") %>
+        </p>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Hora:</strong> <%= @appointment.scheduled_at.in_time_zone(@organization.timezone).strftime("%H:%M") %>
+        </p>
+        <p style="margin: 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Motivo:</strong> <%= @appointment.reason %>
+        </p>
+      </div>
+
+      <!-- Nota -->
+      <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin-top: 24px;">
+        <p style="margin: 0; font-size: 13px; color: #92400e;">
+          📍 Por favor llega 10 minutos antes de tu cita.
+        </p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 40px;">
+      <p style="margin: 0; font-size: 13px; color: #94a3b8; text-align: center;">
+        Este recordatorio fue enviado por <strong style="color: #64748b;"><%= @organization.name %></strong>
+      </p>
+    </div>
+
+  </div>
+
+</body>
 </html>

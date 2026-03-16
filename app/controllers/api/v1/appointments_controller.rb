@@ -36,8 +36,17 @@ module Api
 
       def create
         authorize Appointment, policy_class: AppointmentPolicy
+
         appointment = Appointment.new(appointment_params)
         appointment.save!
+
+        # Programar recordatorio 24h antes
+        reminder_time = appointment.scheduled_at - 24.hours
+        if reminder_time > Time.current
+          AppointmentReminderJob.set(wait_until: reminder_time).perform_later(appointment.id)
+          Rails.logger.info "Recordatorio programado para #{reminder_time} — Cita ##{appointment.id}"
+        end
+
         render json: appointment_json(appointment), status: :created
       end
 
@@ -51,12 +60,20 @@ module Api
         authorize @appointment, policy_class: AppointmentPolicy
 
         if @appointment.confirmed?
-          render json: { error: "La cita ya está confirmada" }, status: :unprocessable_entity
+          render json: { error: 'La cita ya está confirmada' }, status: :unprocessable_entity
           return
         end
 
         @appointment.confirmed!
-        render json: { message: "Cita confirmada correctamente" }, status: :ok
+
+        # Programar recordatorio 24h antes de la cita
+        reminder_time = @appointment.scheduled_at - 24.hours
+        if reminder_time > Time.current
+          AppointmentReminderJob.set(wait_until: reminder_time).perform_later(@appointment.id)
+          Rails.logger.info "Recordatorio programado para #{reminder_time} — Cita ##{@appointment.id}"
+        end
+
+        render json: { message: 'Cita confirmada correctamente' }, status: :ok
       end
 
       def cancel
