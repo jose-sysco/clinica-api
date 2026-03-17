@@ -1,7 +1,7 @@
 module Api
   module V1
     class DoctorsController < BaseController
-      before_action :set_doctor, only: [:show, :update, :destroy, :availability]
+      before_action :set_doctor, only: [:show, :update, :destroy, :availability, :weekly_appointments]
 
       def index
         authorize Doctor, policy_class: DoctorPolicy
@@ -70,6 +70,37 @@ module Api
             }
           },
           total_available: slots.count
+        }
+      end
+
+      def weekly_appointments
+        date = params[:date] ? Date.parse(params[:date]) : Date.today
+        start_of_week = date.beginning_of_week(:sunday)
+        end_of_week = date.end_of_week(:sunday)
+
+        appointments = Appointment.includes(:patient, :owner)
+                                  .where(doctor: @doctor.id)
+                                  .where(scheduled_at: start_of_week.beginning_of_day..end_of_week.end_of_day)
+                                  .where.not(status: [:cancelled, :no_show])
+                                  .order(:scheduled_at)
+
+        render json: {
+          doctor:     { id: @doctor.id, full_name: @doctor.full_name },
+          week_start: start_of_week,
+          week_end:   end_of_week,
+          appointments: appointments.map { |a|
+            {
+              id:           a.id,
+              patient_name: a.patient.name,
+              owner_name:   a.owner.full_name,
+              scheduled_at: a.scheduled_at.in_time_zone(ActsAsTenant.current_tenant.timezone).strftime("%Y-%m-%dT%H:%M:%S"),
+              time:         a.scheduled_at.in_time_zone(ActsAsTenant.current_tenant.timezone).strftime("%H:%M"),
+              date:         a.scheduled_at.in_time_zone(ActsAsTenant.current_tenant.timezone).strftime("%Y-%m-%d"),
+              status:       a.status,
+              reason:       a.reason,
+              appointment_type: a.appointment_type
+            }
+          }
         }
       end
 

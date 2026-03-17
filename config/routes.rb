@@ -21,6 +21,7 @@ Rails.application.routes.draw do
         resources :schedule_blocks, only: [:index, :create, :destroy]
         member do 
           get :availability
+          get :weekly_appointments
         end
       end
 
