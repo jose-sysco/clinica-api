@@ -69,6 +69,15 @@ Rails.application.routes.draw do
       get 'dashboard/stats', to: 'dashboard#stats'
       get "dashboard/reports", to: "reports#index"
     end
+
+    namespace :superadmin do
+      get 'dashboard/stats', to: 'dashboard#stats'
+      resources :organizations, only: [:index, :show] do
+        member do
+          patch :update_license
+        end
+      end
+    end
   end
   match '*unmatched', to: 'errors#not_found', via: :all
 end
