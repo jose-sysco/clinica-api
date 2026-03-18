@@ -2,51 +2,79 @@
 #
 # Table name: organizations
 #
-#  id          :bigint           not null, primary key
-#  name        :string           not null
-#  slug        :string           not null
-#  subdomain   :string           not null
-#  email       :string           not null
-#  phone       :string
-#  address     :string
-#  city        :string
-#  country     :string
-#  timezone    :string           default("UTC"), not null
-#  logo        :string
-#  clinic_type :integer          default("veterinary"), not null
-#  status      :integer          default("active"), not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
+#  id             :bigint           not null, primary key
+#  name           :string           not null
+#  slug           :string           not null
+#  subdomain      :string           not null
+#  email          :string           not null
+#  phone          :string
+#  address        :string
+#  city           :string
+#  country        :string
+#  timezone       :string           default("UTC"), not null
+#  logo           :string
+#  clinic_type    :integer          default("veterinary"), not null
+#  status         :integer          default("active"), not null
+#  plan           :integer          default("trial"), not null
+#  trial_ends_at  :datetime
+#  suspended_at   :datetime
+#  created_at     :datetime         not null
+#  updated_at     :datetime         not null
 #
 class Organization < ApplicationRecord
   # Multitenant
-  has_many :users,          dependent: :destroy
-  has_many :doctors,        dependent: :destroy
-  has_many :schedules,      dependent: :destroy
+  has_many :users,           dependent: :destroy
+  has_many :doctors,         dependent: :destroy
+  has_many :schedules,       dependent: :destroy
   has_many :schedule_blocks, dependent: :destroy
-  has_many :owners,         dependent: :destroy
-  has_many :patients,       dependent: :destroy
-  has_many :appointments,   dependent: :destroy
-  has_many :notifications,  dependent: :destroy
+  has_many :owners,          dependent: :destroy
+  has_many :patients,        dependent: :destroy
+  has_many :appointments,    dependent: :destroy
+  has_many :notifications,   dependent: :destroy
 
   # Enums
   enum :clinic_type, { veterinary: 0, pediatric: 1, general: 2, dental: 3 }
-  enum :status, { active: 0, inactive: 1, suspended: 2 }
+  enum :status,      { active: 0, inactive: 1, suspended: 2 }
+  enum :plan,        { trial: 0, basic: 1, professional: 2, enterprise: 3 }
 
   # Validaciones
-  validates :name,      presence: true
-  validates :slug,      presence: true, uniqueness: true, format: { with: /\A[a-z0-9\-]+\z/, message: "solo letras minúsculas, números y guiones" }
-  validates :subdomain, presence: true, uniqueness: true
-  validates :email,     presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  validates :name,       presence: true
+  validates :slug,       presence: true, uniqueness: true, format: { with: /\A[a-z0-9\-]+\z/, message: "solo letras minúsculas, números y guiones" }
+  validates :subdomain,  presence: true, uniqueness: true
+  validates :email,      presence: true, uniqueness: true, format: { with: URI::MailTo::EMAIL_REGEXP }
   validates :clinic_type, presence: true
   validates :status,      presence: true
   validates :timezone,    presence: true
 
   # Callbacks
-  before_validation :generate_slug, if: -> { slug.blank? && name.present? }
+  before_validation :generate_slug,      if: -> { slug.blank? && name.present? }
   before_validation :generate_subdomain, if: -> { subdomain.blank? && name.present? }
+  before_create     :set_trial_period
+
+  # --- Helpers de licencia ---
+
+  def trial_expired?
+    trial? && trial_ends_at.present? && trial_ends_at < Time.current
+  end
+
+  def trial_days_remaining
+    return 0 unless trial? && trial_ends_at.present?
+    days = ((trial_ends_at - Time.current) / 1.day).ceil
+    [days, 0].max
+  end
+
+  def license_active?
+    return false if suspended?
+    return false if trial_expired?
+    true
+  end
 
   private
+
+  def set_trial_period
+    self.trial_ends_at = 15.days.from_now
+    self.plan = :trial
+  end
 
   def generate_slug
     self.slug = name

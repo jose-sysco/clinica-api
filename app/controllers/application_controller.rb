@@ -36,10 +36,26 @@ class ApplicationController < ActionController::API
         return
       end
 
-      organization = Organization.find_by(slug: request.headers["X-Organization-Slug"], status: :active)
+      organization = Organization.find_by(slug: request.headers["X-Organization-Slug"])
 
       if organization.nil? || organization.id != org_id
         render json: { error: "Token no válido para esta organización" }, status: :unauthorized
+        return
+      end
+
+      if organization.suspended?
+        render json: {
+          error: "Licencia suspendida. Contacta al administrador para reactivar tu suscripción.",
+          code: "license_suspended"
+        }, status: :payment_required
+        return
+      end
+
+      if organization.trial_expired?
+        render json: {
+          error: "Tu período de prueba ha expirado. Adquiere una suscripción para continuar.",
+          code: "trial_expired"
+        }, status: :payment_required
         return
       end
 
@@ -67,18 +83,13 @@ class ApplicationController < ActionController::API
       return
     end
 
-    if organization.suspended?
-      render json: { error: "Organización suspendida" }, status: :forbidden
-      return
-    end
-
     ActsAsTenant.current_tenant = organization
   end
 
   def find_organization
     slug = request.headers["X-Organization-Slug"]
     return nil if slug.blank?
-    Organization.find_by(slug: slug, status: :active)
+    Organization.find_by(slug: slug)
   end
 
   def internal_server_error(error)

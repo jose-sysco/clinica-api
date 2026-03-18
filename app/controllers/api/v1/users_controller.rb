@@ -99,10 +99,15 @@ module Api
           status:     user.status,
           avatar:     user.avatar,
           organization: {
-            id:          user.organization.id,
-            name:        user.organization.name,
-            slug:        user.organization.slug,
-            clinic_type: user.organization.clinic_type
+            id:                   user.organization.id,
+            name:                 user.organization.name,
+            slug:                 user.organization.slug,
+            clinic_type:          user.organization.clinic_type,
+            status:               user.organization.status,
+            plan:                 user.organization.plan,
+            trial_ends_at:        user.organization.trial_ends_at,
+            trial_days_remaining: user.organization.trial_days_remaining,
+            on_trial:             user.organization.trial?
           },
           created_at: user.created_at
         }

@@ -33,18 +33,22 @@ module Api
 
       def organization_json(org)
         {
-          id:           org.id,
-          name:         org.name,
-          slug:         org.slug,
-          subdomain:    org.subdomain,
-          email:        org.email,
-          phone:        org.phone,
-          address:      org.address,
-          city:         org.city,
-          country:      org.country,
-          timezone:     org.timezone,
-          clinic_type:  org.clinic_type,
-          status:       org.status
+          id:                   org.id,
+          name:                 org.name,
+          slug:                 org.slug,
+          subdomain:            org.subdomain,
+          email:                org.email,
+          phone:                org.phone,
+          address:              org.address,
+          city:                 org.city,
+          country:              org.country,
+          timezone:             org.timezone,
+          clinic_type:          org.clinic_type,
+          status:               org.status,
+          plan:                 org.plan,
+          trial_ends_at:        org.trial_ends_at,
+          trial_days_remaining: org.trial_days_remaining,
+          on_trial:             org.trial?
         }
       end
     end
