@@ -69,6 +69,9 @@ Rails.application.routes.draw do
       # Dashboards
       get 'dashboard/stats', to: 'dashboard#stats'
       get "dashboard/reports", to: "reports#index"
+
+      # Search
+      get 'search', to: 'search#index'
     end
 
     namespace :superadmin do
