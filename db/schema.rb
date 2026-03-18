@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_17_130000) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_18_110000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -163,6 +163,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_17_130000) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "blood_type"
+    t.text "allergies"
+    t.text "chronic_conditions"
+    t.string "microchip_number"
+    t.string "reproductive_status"
     t.index ["organization_id", "status"], name: "index_patients_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_patients_on_organization_id"
     t.index ["owner_id"], name: "index_patients_on_owner_id"
@@ -223,5 +228,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_17_130000) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organization_id"], name: "index_users_on_organization_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "weight_records", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.integer "patient_id", null: false
+    t.decimal "weight", precision: 6, scale: 2, null: false
+    t.date "recorded_on", null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_weight_records_on_organization_id"
+    t.index ["patient_id", "recorded_on"], name: "index_weight_records_on_patient_id_and_recorded_on"
+    t.index ["patient_id"], name: "index_weight_records_on_patient_id"
   end
 end

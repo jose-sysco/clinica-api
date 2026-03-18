@@ -57,23 +57,30 @@ module Api
       def patient_params
         params.require(:patient).permit(
           :name, :patient_type, :species,
-          :breed, :gender, :birthdate, :weight, :notes, :status
+          :breed, :gender, :birthdate, :weight, :notes, :status,
+          :blood_type, :allergies, :chronic_conditions,
+          :microchip_number, :reproductive_status
         )
       end
 
       def patient_json(patient)
         {
-          id:           patient.id,
-          name:         patient.name,
-          patient_type: patient.patient_type,
-          species:      patient.species,
-          breed:        patient.breed,
-          gender:       patient.gender,
-          birthdate:    patient.birthdate,
-          age:          patient.age,
-          weight:       patient.weight,
-          notes:        patient.notes,
-          status:       patient.status,
+          id:                   patient.id,
+          name:                 patient.name,
+          patient_type:         patient.patient_type,
+          species:              patient.species,
+          breed:                patient.breed,
+          gender:               patient.gender,
+          birthdate:            patient.birthdate,
+          age:                  patient.age,
+          weight:               patient.weight,
+          notes:                patient.notes,
+          status:               patient.status,
+          blood_type:           patient.blood_type,
+          allergies:            patient.allergies,
+          chronic_conditions:   patient.chronic_conditions,
+          microchip_number:     patient.microchip_number,
+          reproductive_status:  patient.reproductive_status,
           owner: {
             id:        patient.owner.id,
             full_name: patient.owner.full_name,

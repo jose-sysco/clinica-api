@@ -30,8 +30,9 @@ Rails.application.routes.draw do
         resources :patients, only: [:index, :show, :create, :update, :destroy]
       end
 
-      resources :patients, only: [:index, :show] do 
+      resources :patients, only: [:index, :show, :update] do
         resources :medical_records, only: [:index]
+        resources :weight_records,  only: [:index, :create, :destroy]
       end
 
       resources :medical_records, only: [:show, :create, :update]
