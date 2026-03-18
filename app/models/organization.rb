@@ -33,7 +33,7 @@ class Organization < ApplicationRecord
   has_many :notifications,   dependent: :destroy
 
   # Enums
-  enum :clinic_type, { veterinary: 0, pediatric: 1, general: 2, dental: 3 }
+  enum :clinic_type, { veterinary: 0, pediatric: 1, general: 2, dental: 3, psychology: 4 }
   enum :status,      { active: 0, inactive: 1, suspended: 2 }
   enum :plan,        { trial: 0, basic: 1, professional: 2, enterprise: 3 }
 
@@ -65,6 +65,10 @@ class Organization < ApplicationRecord
     return 0 unless trial? && trial_ends_at.present?
     days = ((trial_ends_at - Time.current) / 1.day).ceil
     [days, 0].max
+  end
+
+  def enabled_features
+    PlanConfiguration.features_for(plan)
   end
 
   def license_active?

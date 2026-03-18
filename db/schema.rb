@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_17_120000) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_17_120002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -157,6 +157,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_17_120000) do
     t.index ["organization_id", "status"], name: "index_patients_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_patients_on_organization_id"
     t.index ["owner_id"], name: "index_patients_on_owner_id"
+  end
+
+  create_table "plan_configurations", force: :cascade do |t|
+    t.integer "plan", null: false
+    t.string "name", null: false
+    t.decimal "price_monthly", precision: 10, scale: 2, default: "0.0"
+    t.text "features", default: "[]", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["plan"], name: "index_plan_configurations_on_plan", unique: true
   end
 
   create_table "schedule_blocks", force: :cascade do |t|
