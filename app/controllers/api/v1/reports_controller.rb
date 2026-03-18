@@ -1,8 +1,6 @@
 module Api
   module V1
-    class ReportsController < ApplicationController
-      before_action :authenticate_user!
-
+    class ReportsController < BaseController
       def index
         render json: {
           appointments_by_month: appointments_by_month,
