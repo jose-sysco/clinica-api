@@ -43,6 +43,16 @@ class ApplicationController < ActionController::API
         return
       end
 
+      @current_user = User.find_by(id: user_id, organization_id: org_id)
+
+      if @current_user.nil?
+        render json: { error: "Usuario no encontrado" }, status: :unauthorized
+        return
+      end
+
+      # Superadmin nunca tiene restricciones de licencia
+      return if @current_user.superadmin?
+
       if organization.suspended?
         render json: {
           error: "Licencia suspendida. Contacta al administrador para reactivar tu suscripción.",
@@ -51,19 +61,13 @@ class ApplicationController < ActionController::API
         return
       end
 
-      if organization.trial_expired?
+      # Trial vencido: solo bloquea escrituras (POST, PATCH, PUT, DELETE)
+      # Los GET siguen funcionando para que el usuario pueda ver sus datos
+      if organization.trial_expired? && !request.get?
         render json: {
-          error: "Tu período de prueba ha expirado. Adquiere una suscripción para continuar.",
+          error: "Tu período de prueba ha expirado. Solo puedes consultar información. Adquiere una suscripción para continuar.",
           code: "trial_expired"
         }, status: :payment_required
-        return
-      end
-
-      @current_user = User.find_by(id: user_id, organization_id: org_id)
-
-      if @current_user.nil?
-        render json: { error: "Usuario no encontrado" }, status: :unauthorized
-        return
       end
 
     rescue JWT::DecodeError

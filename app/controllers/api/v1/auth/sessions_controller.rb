@@ -13,42 +13,39 @@ module Api
             return
           end
 
-          if organization.suspended?
-            render json: {
-              error: "Tu licencia está suspendida. Contacta al administrador para reactivar tu suscripción.",
-              code: "license_suspended"
-            }, status: :payment_required
-            return
-          end
-
-          if organization.trial_expired?
-            render json: {
-              error: "Tu período de prueba ha expirado. Adquiere una suscripción para continuar.",
-              code: "trial_expired"
-            }, status: :payment_required
-            return
-          end
-
           user = User.where(organization: organization)
                      .find_by(email: params.dig(:user, :email))
 
-          if user&.valid_password?(params.dig(:user, :password))
-            token = generate_jwt(user)
-            render json: {
-              message: "Sesión iniciada correctamente",
-              token: token,
-              user: {
-                id:        user.id,
-                email:     user.email,
-                full_name: user.full_name,
-                role:      user.role,
-                status:    user.status
-              },
-              organization: organization_license_json(organization)
-            }, status: :ok
-          else
+          unless user&.valid_password?(params.dig(:user, :password))
             render json: { error: "Email o contraseña incorrectos" }, status: :unauthorized
+            return
           end
+
+          # Superadmin no tiene restricciones de licencia — siempre puede iniciar sesión
+          unless user.superadmin?
+            if organization.suspended?
+              render json: {
+                error: "Tu licencia está suspendida. Contacta al administrador para reactivar tu suscripción.",
+                code: "license_suspended"
+              }, status: :payment_required
+              return
+            end
+            # Trial vencido: SE PERMITE el login — el portal mostrará modo solo lectura
+          end
+
+          token = generate_jwt(user)
+          render json: {
+            message: "Sesión iniciada correctamente",
+            token: token,
+            user: {
+              id:        user.id,
+              email:     user.email,
+              full_name: user.full_name,
+              role:      user.role,
+              status:    user.status
+            },
+            organization: organization_license_json(organization)
+          }, status: :ok
         end
 
         def destroy
@@ -96,16 +93,16 @@ module Api
 
         def organization_license_json(org)
           {
-            id:                  org.id,
-            name:                org.name,
-            slug:                org.slug,
-            clinic_type:         org.clinic_type,
-            status:              org.status,
-            plan:                org.plan,
-            trial_ends_at:       org.trial_ends_at,
+            id:                   org.id,
+            name:                 org.name,
+            slug:                 org.slug,
+            clinic_type:          org.clinic_type,
+            status:               org.status,
+            plan:                 org.plan,
+            trial_ends_at:        org.trial_ends_at,
             trial_days_remaining: org.trial_days_remaining,
-            trial_expired:       org.trial_expired?,
-            on_trial:            org.trial?
+            trial_expired:        org.trial_expired?,
+            on_trial:             org.trial?
           }
         end
       end
