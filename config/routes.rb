@@ -77,6 +77,7 @@ Rails.application.routes.draw do
           patch :update_license
         end
       end
+      resources :users, only: [:index, :create, :update]
     end
   end
   match '*unmatched', to: 'errors#not_found', via: :all

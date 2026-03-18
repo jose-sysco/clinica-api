@@ -53,6 +53,10 @@ class Organization < ApplicationRecord
 
   # --- Helpers de licencia ---
 
+  def expiring_soon?(days = 7)
+    trial? && trial_ends_at.present? && trial_ends_at.between?(Time.current, days.days.from_now)
+  end
+
   def trial_expired?
     trial? && trial_ends_at.present? && trial_ends_at < Time.current
   end

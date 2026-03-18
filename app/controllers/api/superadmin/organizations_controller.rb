@@ -58,6 +58,9 @@ module Api
           name:                 org.name,
           slug:                 org.slug,
           email:                org.email,
+          phone:                org.phone,
+          city:                 org.city,
+          country:              org.country,
           clinic_type:          org.clinic_type,
           status:               org.status,
           plan:                 org.plan,
@@ -65,11 +68,13 @@ module Api
           trial_days_remaining: org.trial_days_remaining,
           trial_expired:        org.trial_expired?,
           on_trial:             org.trial?,
+          expiring_soon:        org.expiring_soon?,
           suspended_at:         org.suspended_at,
           users_count:          org.users.count,
           doctors_count:        org.doctors.count,
           patients_count:       org.patients.count,
           appointments_count:   org.appointments.count,
+          last_appointment_at:  org.appointments.maximum(:created_at),
           created_at:           org.created_at
         }
       end
