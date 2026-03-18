@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_17_120002) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_17_130000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -75,6 +75,15 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_17_120002) do
     t.date "next_visit_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "soap_subjective"
+    t.text "soap_objective"
+    t.text "soap_assessment"
+    t.text "soap_plan"
+    t.integer "heart_rate"
+    t.integer "respiratory_rate"
+    t.integer "blood_pressure_systolic"
+    t.integer "blood_pressure_diastolic"
+    t.decimal "oxygen_saturation", precision: 4, scale: 1
     t.index ["appointment_id"], name: "index_medical_records_on_appointment_id", unique: true
     t.index ["doctor_id"], name: "index_medical_records_on_doctor_id"
     t.index ["organization_id"], name: "index_medical_records_on_organization_id"

@@ -53,8 +53,14 @@ module Api
 
       def medical_record_params
         params.require(:medical_record).permit(
-          :appointment_id, :weight, :height, :temperature,
-          :diagnosis, :treatment, :medications, :notes, :next_visit_date
+          :appointment_id,
+          :weight, :height, :temperature,
+          :heart_rate, :respiratory_rate,
+          :blood_pressure_systolic, :blood_pressure_diastolic,
+          :oxygen_saturation,
+          :soap_subjective, :soap_objective, :soap_assessment, :soap_plan,
+          :diagnosis, :treatment, :medications, :notes,
+          :next_visit_date
         )
       end
 
@@ -67,9 +73,21 @@ module Api
             id:        record.doctor.id,
             full_name: record.doctor.full_name
           },
-          weight:          record.weight,
-          height:          record.height,
-          temperature:     record.temperature,
+          # Signos vitales
+          weight:                   record.weight,
+          height:                   record.height,
+          temperature:              record.temperature,
+          heart_rate:               record.heart_rate,
+          respiratory_rate:         record.respiratory_rate,
+          blood_pressure_systolic:  record.blood_pressure_systolic,
+          blood_pressure_diastolic: record.blood_pressure_diastolic,
+          oxygen_saturation:        record.oxygen_saturation,
+          # SOAP
+          soap_subjective: record.soap_subjective,
+          soap_objective:  record.soap_objective,
+          soap_assessment: record.soap_assessment,
+          soap_plan:       record.soap_plan,
+          # Campos legacy (registros anteriores al rediseño)
           diagnosis:       record.diagnosis,
           treatment:       record.treatment,
           medications:     record.medications,

@@ -27,9 +27,22 @@ class MedicalRecord < ApplicationRecord
   belongs_to :doctor
 
   validates :appointment_id, uniqueness: true
-  validates :diagnosis,      presence: true
+  validate  :requires_assessment
 
-  validates :weight,      numericality: { greater_than: 0 }, allow_blank: true
-  validates :height,      numericality: { greater_than: 0 }, allow_blank: true
-  validates :temperature, numericality: { greater_than: 0 }, allow_blank: true
+  validates :weight,                   numericality: { greater_than: 0 },                             allow_blank: true
+  validates :height,                   numericality: { greater_than: 0 },                             allow_blank: true
+  validates :temperature,              numericality: { greater_than: 0 },                             allow_blank: true
+  validates :heart_rate,               numericality: { only_integer: true, greater_than: 0 },         allow_blank: true
+  validates :respiratory_rate,         numericality: { only_integer: true, greater_than: 0 },         allow_blank: true
+  validates :blood_pressure_systolic,  numericality: { only_integer: true, greater_than: 0 },         allow_blank: true
+  validates :blood_pressure_diastolic, numericality: { only_integer: true, greater_than: 0 },         allow_blank: true
+  validates :oxygen_saturation,        numericality: { greater_than: 0, less_than_or_equal_to: 100 }, allow_blank: true
+
+  private
+
+  def requires_assessment
+    if soap_assessment.blank? && diagnosis.blank?
+      errors.add(:base, "Se requiere un diagnóstico o evaluación (campo A del SOAP)")
+    end
+  end
 end
