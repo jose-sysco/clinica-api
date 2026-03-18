@@ -67,6 +67,7 @@ Rails.application.routes.draw do
 
       # Dashboards
       get 'dashboard/stats', to: 'dashboard#stats'
+      get "dashboard/reports", to: "reports#index"
     end
   end
   match '*unmatched', to: 'errors#not_found', via: :all

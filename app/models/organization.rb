@@ -1,3 +1,23 @@
+# == Schema Information
+#
+# Table name: organizations
+#
+#  id          :bigint           not null, primary key
+#  name        :string           not null
+#  slug        :string           not null
+#  subdomain   :string           not null
+#  email       :string           not null
+#  phone       :string
+#  address     :string
+#  city        :string
+#  country     :string
+#  timezone    :string           default("UTC"), not null
+#  logo        :string
+#  clinic_type :integer          default("veterinary"), not null
+#  status      :integer          default("active"), not null
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#
 class Organization < ApplicationRecord
   # Multitenant
   has_many :users,          dependent: :destroy

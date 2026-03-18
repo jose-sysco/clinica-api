@@ -1,3 +1,17 @@
+# == Schema Information
+#
+# Table name: schedules
+#
+#  id              :bigint           not null, primary key
+#  organization_id :integer          not null
+#  doctor_id       :integer          not null
+#  day_of_week     :integer          not null
+#  start_time      :time             not null
+#  end_time        :time             not null
+#  is_active       :boolean          default(TRUE), not null
+#  created_at      :datetime         not null
+#  updated_at      :datetime         not null
+#
 FactoryBot.define do
   factory :schedule do
     organization_id { 1 }

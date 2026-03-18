@@ -44,6 +44,7 @@ group :development, :test do
   gem 'faker'
   gem 'rswag-specs'
   gem 'dotenv-rails'
+  gem 'annotate'
 end
 
 
