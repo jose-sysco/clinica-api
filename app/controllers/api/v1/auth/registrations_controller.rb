@@ -85,6 +85,7 @@ module Api
             plan:                 org.plan,
             trial_ends_at:        org.trial_ends_at,
             trial_days_remaining: org.trial_days_remaining,
+            trial_expired:        org.trial_expired?,
             on_trial:             org.trial?
           }
         end

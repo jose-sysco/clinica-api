@@ -107,6 +107,7 @@ module Api
             plan:                 user.organization.plan,
             trial_ends_at:        user.organization.trial_ends_at,
             trial_days_remaining: user.organization.trial_days_remaining,
+            trial_expired:        user.organization.trial_expired?,
             on_trial:             user.organization.trial?
           },
           created_at: user.created_at
