@@ -8,7 +8,7 @@ module Api
         owners = Owner.all
         owners = owners.search(params[:q]) if params[:q].present?
 
-        pagy, owners = pagy(owners, limit: params[:per_page] || 20)
+        pagy, owners = pagy(owners, limit: params[:per_page] || 10)
 
         render json: {
           data:       owners.map { |o| owner_json(o) },

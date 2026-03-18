@@ -37,7 +37,8 @@ module Api
       def index
         authorize User
         users = User.all.order(created_at: :desc)
-        render json: { data: users.map { |u| user_json(u) } }
+        pagy, users = pagy(users, limit: params[:per_page] || 10)
+        render json: { data: users.map { |u| user_json(u) }, pagination: pagy_metadata(pagy) }
       end
 
       # Admin — ver un usuario

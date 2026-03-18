@@ -5,7 +5,7 @@ module Api
 
       def index
         authorize Doctor, policy_class: DoctorPolicy
-        pagy, doctors = pagy(Doctor.active.includes(:user, :schedules), limit: params[:per_page] || 20)
+        pagy, doctors = pagy(Doctor.active.includes(:user, :schedules), limit: params[:per_page] || 10)
 
         render json: {
           data:       doctors.map { |d| doctor_json(d) },

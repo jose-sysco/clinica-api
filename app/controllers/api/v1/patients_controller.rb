@@ -14,7 +14,7 @@ module Api
         end
 
         patients = patients.search(params[:q]) if params[:q].present?
-        pagy, patients = pagy(patients, limit: params[:per_page] || 20)
+        pagy, patients = pagy(patients, limit: params[:per_page] || 10)
 
         render json: {
           data:       patients.map { |p| patient_json(p) },

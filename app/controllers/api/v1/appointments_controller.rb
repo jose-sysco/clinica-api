@@ -21,7 +21,7 @@ module Api
           appointments = appointments.by_range(params[:from], params[:to])
         end
 
-        pagy, appointments = pagy(appointments, limit: params[:per_page] || 20)
+        pagy, appointments = pagy(appointments, limit: params[:per_page] || 10)
 
         render json: {
           data:       appointments.map { |a| appointment_json(a) },
