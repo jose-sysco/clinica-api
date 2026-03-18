@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_18_110000) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_18_171727) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -228,6 +228,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_18_110000) do
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["organization_id"], name: "index_users_on_organization_id"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+  end
+
+  create_table "waitlist_entries", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.integer "doctor_id", null: false
+    t.integer "patient_id", null: false
+    t.integer "owner_id", null: false
+    t.date "preferred_date"
+    t.text "notes"
+    t.integer "status", default: 0, null: false
+    t.datetime "notified_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "doctor_id", "status"], name: "idx_on_organization_id_doctor_id_status_4e6505335a"
+    t.index ["organization_id", "patient_id"], name: "index_waitlist_entries_on_organization_id_and_patient_id"
   end
 
   create_table "weight_records", force: :cascade do |t|

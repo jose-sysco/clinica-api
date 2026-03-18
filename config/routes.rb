@@ -70,6 +70,9 @@ Rails.application.routes.draw do
       get 'dashboard/stats', to: 'dashboard#stats'
       get "dashboard/reports", to: "reports#index"
 
+      # Waitlist
+      resources :waitlist_entries, only: [:index, :create, :update, :destroy]
+
       # Search
       get 'search', to: 'search#index'
     end

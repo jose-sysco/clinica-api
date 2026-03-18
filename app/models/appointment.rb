@@ -133,6 +133,7 @@ class Appointment < ApplicationRecord
       AppointmentConfirmationJob.perform_later(id)
     when "cancelled"
       AppointmentCancellationJob.perform_later(id)
+      WaitlistNotificationJob.perform_later(id)
     end
   end
 
