@@ -17,6 +17,8 @@ module Api
         appointments = appointments.by_type(params[:appointment_type])  if params[:appointment_type].present?
         appointments = appointments.by_date(params[:date])              if params[:date].present?
 
+        appointments = appointments.order(scheduled_at: :desc)
+
         if params[:from].present? && params[:to].present?
           appointments = appointments.by_range(params[:from], params[:to])
         end
