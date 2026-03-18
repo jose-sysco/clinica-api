@@ -31,11 +31,11 @@ Rails.application.routes.draw do
       end
 
       resources :patients, only: [:index, :show, :update] do
-        resources :medical_records, only: [:index]
-        resources :weight_records,  only: [:index, :create, :destroy]
+        resources :weight_records, only: [:index, :create, :destroy]
+        get :medical_records, to: "medical_records#patient_records"
       end
 
-      resources :medical_records, only: [:show, :create, :update]
+      resources :medical_records, only: [:index, :show, :create, :update]
 
       # Appointments
       resources :appointments, only: [:index, :show, :create, :update] do

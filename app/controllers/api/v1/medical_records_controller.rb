@@ -1,14 +1,25 @@
 module Api
   module V1
     class MedicalRecordsController < BaseController
-      before_action :set_patient, only: [:index]
+      before_action :set_patient,        only: [:patient_records]
       before_action :set_medical_record, only: [:show, :update]
 
+      # GET /api/v1/medical_records — todos los expedientes de la org (paginado)
       def index
-        records = @patient.medical_records
-                          .includes(:appointment, :doctor)
-                          .order(created_at: :desc)
+        scope = MedicalRecord.includes(:doctor, :patient).order(created_at: :desc)
+        scope = scope.where(patient_id: params[:patient_id]) if params[:patient_id].present?
+        pagy, records = pagy(scope, limit: params[:per_page] || 20)
+        render json: {
+          data:       records.map { |r| medical_record_json(r) },
+          pagination: pagy_metadata(pagy)
+        }
+      end
 
+      # GET /api/v1/patients/:patient_id/medical_records
+      def patient_records
+        records = @patient.medical_records
+                          .includes(:doctor)
+                          .order(created_at: :desc)
         render json: records.map { |r| medical_record_json(r) }
       end
 
@@ -65,10 +76,12 @@ module Api
       end
 
       def medical_record_json(record)
+        tz = ActsAsTenant.current_tenant.timezone
         {
           id:             record.id,
           appointment_id: record.appointment_id,
           patient_id:     record.patient_id,
+          patient:        record.association(:patient).loaded? ? { id: record.patient.id, name: record.patient.name } : nil,
           doctor: {
             id:        record.doctor.id,
             full_name: record.doctor.full_name
@@ -87,13 +100,13 @@ module Api
           soap_objective:  record.soap_objective,
           soap_assessment: record.soap_assessment,
           soap_plan:       record.soap_plan,
-          # Campos legacy (registros anteriores al rediseño)
+          # Campos legacy
           diagnosis:       record.diagnosis,
           treatment:       record.treatment,
           medications:     record.medications,
           notes:           record.notes,
           next_visit_date: record.next_visit_date,
-          created_at:      record.created_at.in_time_zone(ActsAsTenant.current_tenant.timezone).strftime("%Y-%m-%dT%H:%M:%S")
+          created_at:      record.created_at.in_time_zone(tz).strftime("%Y-%m-%dT%H:%M:%S")
         }
       end
     end
