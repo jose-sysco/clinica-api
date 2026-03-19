@@ -33,7 +33,7 @@ class Organization < ApplicationRecord
   has_many :notifications,   dependent: :destroy
 
   # Enums
-  enum :clinic_type, { veterinary: 0, pediatric: 1, general: 2, dental: 3, psychology: 4 }
+  enum :clinic_type, { veterinary: 0, pediatric: 1, general: 2, dental: 3, psychology: 4, physiotherapy: 5, nutrition: 6, beauty: 7, coaching: 8, legal: 9, fitness: 10 }
   enum :status,      { active: 0, inactive: 1, suspended: 2 }
   enum :plan,        { trial: 0, basic: 1, professional: 2, enterprise: 3 }
 
