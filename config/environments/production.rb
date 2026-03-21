@@ -30,7 +30,8 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
-  config.active_storage.service = :local
+  # Usar S3 en producción si las credenciales AWS están configuradas; sino disco local.
+  config.active_storage.service = ENV["AWS_ACCESS_KEY_ID"].present? ? :amazon : :local
 
   # Mount Action Cable outside main process or domain.
   # config.action_cable.mount_path = nil
@@ -70,10 +71,21 @@ Rails.application.configure do
   # Disable caching for Action Mailer templates even if Action Controller
   # caching is enabled.
   config.action_mailer.perform_caching = false
+  config.action_mailer.raise_delivery_errors = true
+  config.action_mailer.default_url_options = { host: ENV.fetch("API_HOST", "api.clinicaportal.com"), protocol: "https" }
 
-  # Ignore bad email addresses and do not raise email delivery errors.
-  # Set this to true and configure the email server for immediate delivery to raise delivery errors.
-  # config.action_mailer.raise_delivery_errors = false
+  # SMTP via env vars (compatible con SendGrid, Mailgun, Amazon SES, etc.)
+  if ENV["SMTP_HOST"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address:              ENV["SMTP_HOST"],
+      port:                 ENV.fetch("SMTP_PORT", 587).to_i,
+      user_name:            ENV["SMTP_USER"],
+      password:             ENV["SMTP_PASSWORD"],
+      authentication:       :plain,
+      enable_starttls_auto: true
+    }
+  end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
   # the I18n.default_locale when a translation cannot be found).

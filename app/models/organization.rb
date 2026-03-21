@@ -22,6 +22,9 @@
 #  updated_at     :datetime         not null
 #
 class Organization < ApplicationRecord
+  # Logo upload
+  has_one_attached :logo_file
+
   # Multitenant
   has_many :users,           dependent: :destroy
   has_many :doctors,         dependent: :destroy

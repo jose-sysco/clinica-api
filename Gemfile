@@ -66,8 +66,11 @@ gem 'redis'
 # Paginacion
 gem 'pagy', '~> 9.0'
 
-# CORS para desarrollo
+# CORS
 gem 'rack-cors'
+
+# Rate limiting
+gem 'rack-attack'
 
 # Serializers
 gem 'jsonapi-serializer'

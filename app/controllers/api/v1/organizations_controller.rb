@@ -21,6 +21,35 @@ module Api
         render json: organization_json(ActsAsTenant.current_tenant)
       end
 
+      # PATCH /api/v1/organization/upload_logo
+      def upload_logo
+        org = ActsAsTenant.current_tenant
+        authorize org, policy_class: OrganizationPolicy
+
+        file = params[:logo]
+
+        unless file.present?
+          render json: { error: "No se recibió ningún archivo" }, status: :unprocessable_entity
+          return
+        end
+
+        unless file.content_type.start_with?("image/")
+          render json: { error: "El archivo debe ser una imagen (PNG, JPG, SVG, WebP)" }, status: :unprocessable_entity
+          return
+        end
+
+        if file.size > 2.megabytes
+          render json: { error: "La imagen no puede superar los 2 MB" }, status: :unprocessable_entity
+          return
+        end
+
+        org.logo_file.attach(file)
+
+        render json: {
+          logo_url: rails_blob_url(org.logo_file, host: request.base_url)
+        }, status: :ok
+      end
+
       private
 
       def organization_params
@@ -50,7 +79,10 @@ module Api
           trial_days_remaining: org.trial_days_remaining,
           trial_expired:        org.trial_expired?,
           on_trial:             org.trial?,
-          features:             org.enabled_features
+          features:             org.enabled_features,
+          logo_url:             org.logo_file.attached? \
+                                  ? rails_blob_url(org.logo_file, host: request.base_url) \
+                                  : org.logo
         }
       end
     end

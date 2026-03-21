@@ -5,6 +5,7 @@ module Api
         skip_before_action :authenticate_user!
         skip_before_action :set_tenant
 
+        # POST /api/v1/auth/sign_in
         def create
           organization = Organization.find_by(slug: request.headers["X-Organization-Slug"])
 
@@ -21,22 +22,23 @@ module Api
             return
           end
 
-          # Superadmin no tiene restricciones de licencia — siempre puede iniciar sesión
           unless user.superadmin?
             if organization.suspended?
               render json: {
                 error: "Tu licencia está suspendida. Contacta al administrador para reactivar tu suscripción.",
-                code: "license_suspended"
+                code:  "license_suspended"
               }, status: :payment_required
               return
             end
-            # Trial vencido: SE PERMITE el login — el portal mostrará modo solo lectura
           end
 
-          token = generate_jwt(user)
+          access_token              = generate_jwt(user)
+          raw_refresh_token, _record = RefreshToken.generate_for(user)
+
           render json: {
-            message: "Sesión iniciada correctamente",
-            token: token,
+            message:       "Sesión iniciada correctamente",
+            token:         access_token,
+            refresh_token: raw_refresh_token,
             user: {
               id:        user.id,
               email:     user.email,
@@ -48,31 +50,58 @@ module Api
           }, status: :ok
         end
 
-        def destroy
-          token = request.headers["Authorization"]&.split(" ")&.last
+        # POST /api/v1/auth/refresh
+        def refresh
+          raw = params[:refresh_token]
+          record = RefreshToken.find_valid(raw)
 
-          if token.nil?
-            render json: { message: "Sesión cerrada correctamente" }, status: :ok
+          unless record
+            render json: { error: "Refresh token inválido o expirado", code: "refresh_expired" },
+                   status: :unauthorized
             return
           end
 
-          begin
-            decoded = JWT.decode(
-              token,
-              Rails.application.credentials.devise_jwt_secret_key,
-              true,
-              algorithm: "HS256"
-            )
+          user         = record.user
+          organization = user.organization
 
-            jti = decoded.first["jti"]
-            exp = decoded.first["exp"]
+          # Rotate: revoke old token, issue new pair
+          record.revoke!
 
-            unless JwtDenylist.exists?(jti: jti)
-              JwtDenylist.create!(jti: jti, exp: Time.at(exp))
+          new_access_token              = generate_jwt(user)
+          new_raw_refresh_token, _rec   = RefreshToken.generate_for(user)
+
+          render json: {
+            token:         new_access_token,
+            refresh_token: new_raw_refresh_token,
+            organization:  organization_license_json(organization)
+          }, status: :ok
+        end
+
+        # DELETE /api/v1/auth/sign_out
+        def destroy
+          # Revoke access token (JwtDenylist)
+          access_token = request.headers["Authorization"]&.split(" ")&.last
+          if access_token.present?
+            begin
+              decoded = JWT.decode(
+                access_token,
+                jwt_secret,
+                true,
+                algorithm: "HS256"
+              )
+              jti = decoded.first["jti"]
+              exp = decoded.first["exp"]
+              JwtDenylist.create!(jti: jti, exp: Time.at(exp)) unless JwtDenylist.exists?(jti: jti)
+            rescue JWT::DecodeError
+              # expired or invalid — no action needed
             end
+          end
 
-          rescue JWT::DecodeError
-            # Token inválido o expirado, no importa — igual cerramos sesión
+          # Revoke refresh token
+          raw_refresh = params[:refresh_token]
+          if raw_refresh.present?
+            record = RefreshToken.find_valid(raw_refresh)
+            record&.revoke!
           end
 
           render json: { message: "Sesión cerrada correctamente" }, status: :ok
@@ -81,14 +110,18 @@ module Api
         private
 
         def generate_jwt(user)
-          jti = SecureRandom.uuid
+          jti     = SecureRandom.uuid
           payload = {
             sub: user.id.to_s,
             jti: jti,
-            exp: 24.hours.from_now.to_i,
+            exp: 1.hour.from_now.to_i,   # access token: 1 hora
             org: user.organization_id
           }
-          JWT.encode(payload, ENV['DEVISE_JWT_SECRET_KEY'] || Rails.application.credentials.devise_jwt_secret_key, "HS256")
+          JWT.encode(payload, jwt_secret, "HS256")
+        end
+
+        def jwt_secret
+          ENV["DEVISE_JWT_SECRET_KEY"] || Rails.application.credentials.devise_jwt_secret_key
         end
 
         def organization_license_json(org)

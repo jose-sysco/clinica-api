@@ -5,15 +5,18 @@ Rails.application.routes.draw do
     namespace :v1 do
 
       # Auth
-      post   'auth/sign_up',  to: 'auth/registrations#create'
-      post   'auth/sign_in',  to: 'auth/sessions#create'
-      delete 'auth/sign_out', to: 'auth/sessions#destroy'
+      post   'auth/sign_up',       to: 'auth/registrations#create'
+      post   'auth/sign_in',       to: 'auth/sessions#create'
+      delete 'auth/sign_out',      to: 'auth/sessions#destroy'
+      post   'auth/refresh',       to: 'auth/sessions#refresh'
       post   'auth/sign_up_staff', to: 'auth/registrations#create_staff'
-      post 'auth/forgot_password',  to: 'auth/passwords#forgot'
-      post 'auth/reset_password',  to: 'auth/passwords#reset'
+      post   'auth/forgot_password', to: 'auth/passwords#forgot'
+      post   'auth/reset_password',  to: 'auth/passwords#reset'
 
       # Organizations
-      resource :organization, only: [:show, :update]
+      resource :organization, only: [:show, :update] do
+        patch :upload_logo, on: :member
+      end
 
       # Doctors
       resources :doctors, only: [:index, :show, :create, :update, :destroy] do
@@ -43,6 +46,9 @@ Rails.application.routes.draw do
           patch :confirm
           patch :cancel
           patch :complete
+          patch :cancel_series
+          patch :start
+          patch :no_show
         end
       end
 

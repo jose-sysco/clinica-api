@@ -1,7 +1,7 @@
 module Api
   module V1
     class AppointmentsController < BaseController
-      before_action :set_appointment, only: [:show, :update, :cancel, :confirm]
+      before_action :set_appointment, only: [:show, :update, :cancel, :confirm, :complete, :cancel_series, :no_show, :start]
 
       def index
         authorize Appointment, policy_class: AppointmentPolicy
@@ -39,17 +39,14 @@ module Api
       def create
         authorize Appointment, policy_class: AppointmentPolicy
 
-        appointment = Appointment.new(appointment_params)
-        appointment.save!
+        recurrence_type     = params[:recurrence_type].presence     # weekly | biweekly | monthly
+        recurrence_sessions = params[:recurrence_sessions].to_i
 
-        # Programar recordatorio 24h antes
-        reminder_time = appointment.scheduled_at - 24.hours
-        if reminder_time > Time.current
-          AppointmentReminderJob.set(wait_until: reminder_time).perform_later(appointment.id)
-          Rails.logger.info "Recordatorio programado para #{reminder_time} — Cita ##{appointment.id}"
+        if recurrence_type.present? && recurrence_sessions > 1
+          create_recurring_series(recurrence_type, recurrence_sessions)
+        else
+          create_single
         end
-
-        render json: appointment_json(appointment), status: :created
       end
 
       def update
@@ -68,11 +65,9 @@ module Api
 
         @appointment.confirmed!
 
-        # Programar recordatorio 24h antes de la cita
         reminder_time = @appointment.scheduled_at - 24.hours
         if reminder_time > Time.current
           AppointmentReminderJob.set(wait_until: reminder_time).perform_later(@appointment.id)
-          Rails.logger.info "Recordatorio programado para #{reminder_time} — Cita ##{@appointment.id}"
         end
 
         render json: { message: 'Cita confirmada correctamente' }, status: :ok
@@ -94,10 +89,34 @@ module Api
         render json: { message: "Cita cancelada correctamente" }
       end
 
+      def cancel_series
+        authorize @appointment, policy_class: AppointmentPolicy
+
+        group_id = @appointment.recurrence_group_id
+        unless group_id
+          render json: { error: "Esta cita no pertenece a una serie" }, status: :unprocessable_entity
+          return
+        end
+
+        cancelled_count = 0
+        Appointment.where(recurrence_group_id: group_id)
+                   .where.not(status: [:cancelled, :completed])
+                   .find_each do |appt|
+          appt.update!(
+            status:              :cancelled,
+            cancelled_by:        :cancelled_by_doctor,
+            cancellation_reason: params[:cancellation_reason] || "Serie cancelada"
+          )
+          cancelled_count += 1
+        end
+
+        render json: { message: "#{cancelled_count} citas de la serie canceladas correctamente", cancelled: cancelled_count }
+      end
+
       def complete
         authorize @appointment, policy_class: AppointmentPolicy
 
-        if @appointment.complete?
+        if @appointment.completed?
           render json: { error: "La cita ya está completada" }, status: :unprocessable_entity
           return
         end
@@ -106,7 +125,103 @@ module Api
         render json: { message: "Cita completada correctamente" }, status: :ok
       end
 
+      def start
+        authorize @appointment, policy_class: AppointmentPolicy
+
+        unless @appointment.confirmed?
+          render json: { error: "Solo se pueden iniciar citas confirmadas" }, status: :unprocessable_entity
+          return
+        end
+
+        @appointment.in_progress!
+        render json: { message: "Cita en curso" }, status: :ok
+      end
+
+      def no_show
+        authorize @appointment, policy_class: AppointmentPolicy
+
+        if @appointment.no_show?
+          render json: { error: "La cita ya está registrada como no presentada" }, status: :unprocessable_entity
+          return
+        end
+
+        unless ["pending", "confirmed", "in_progress"].include?(@appointment.status)
+          render json: { error: "No se puede registrar como no presentada desde el estado actual" }, status: :unprocessable_entity
+          return
+        end
+
+        @appointment.no_show!
+        render json: { message: "Registrada como no presentada" }, status: :ok
+      end
+
       private
+
+      # ── Single appointment ─────────────────────────────────────────────────
+
+      def create_single
+        appointment = Appointment.new(appointment_params)
+        appointment.save!
+        schedule_reminder(appointment)
+        render json: appointment_json(appointment), status: :created
+      end
+
+      # ── Recurring series ───────────────────────────────────────────────────
+
+      def create_recurring_series(recurrence_type, sessions)
+        interval_days = case recurrence_type
+                        when "weekly"    then 7
+                        when "biweekly"  then 14
+                        when "monthly"   then nil   # use months logic
+                        end
+
+        group_id   = SecureRandom.uuid
+        base_attrs = appointment_params.to_h
+        base_time  = Time.zone.parse(base_attrs["scheduled_at"])
+
+        created = []
+
+        Appointment.transaction do
+          sessions.times do |i|
+            scheduled_at = if recurrence_type == "monthly"
+              base_time + i.months
+            else
+              base_time + (i * interval_days).days
+            end
+
+            appt = Appointment.new(
+              base_attrs.merge(
+                "scheduled_at"        => scheduled_at,
+                "ends_at"             => nil,
+                "recurrence_group_id" => group_id,
+                "recurrence_index"    => i + 1,
+                "recurrence_total"    => sessions
+              )
+            )
+            appt.save!
+            created << appt
+          end
+        end
+
+        created.each { |a| schedule_reminder(a) }
+
+        render json: {
+          series_id:    group_id,
+          total:        created.size,
+          appointments: created.map { |a| appointment_json(a) }
+        }, status: :created
+
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { errors: [e.message] }, status: :unprocessable_entity
+      end
+
+      # ── Helpers ────────────────────────────────────────────────────────────
+
+      def schedule_reminder(appointment)
+        reminder_time = appointment.scheduled_at - 24.hours
+        if reminder_time > Time.current
+          AppointmentReminderJob.set(wait_until: reminder_time).perform_later(appointment.id)
+        end
+      end
 
       def set_appointment
         @appointment = Appointment.find(params[:id])
@@ -130,6 +245,9 @@ module Api
           reason:           appointment.reason,
           notes:            appointment.notes,
           confirmed_at:     appointment.confirmed_at,
+          recurrence_group_id: appointment.recurrence_group_id,
+          recurrence_index:    appointment.recurrence_index,
+          recurrence_total:    appointment.recurrence_total,
           doctor: {
             id:        appointment.doctor.id,
             full_name: appointment.doctor.full_name

@@ -142,12 +142,12 @@ class Appointment < ApplicationRecord
     return unless status_changed?
 
     allowed = {
-      "pending" => ["confirmed", "cancelled"],
-      "confirmed" => ["in_progress", "cancelled", "completed"],
+      "pending"     => ["confirmed", "cancelled", "no_show"],
+      "confirmed"   => ["in_progress", "cancelled", "completed", "no_show"],
       "in_progress" => ["completed", "no_show"],
-      "completed" => [],
-      "cancelled" => [],
-      "no_show" => []
+      "completed"   => [],
+      "cancelled"   => [],
+      "no_show"     => []
     }
 
     unless allowed[status_was]&.include?(status)
