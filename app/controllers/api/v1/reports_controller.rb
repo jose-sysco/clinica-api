@@ -145,7 +145,7 @@ module Api
         period_scope
           .joins(doctor: :user)
           .group("doctors.id", "users.first_name", "users.last_name")
-          .order("COUNT(*) DESC")
+          .order(Arel.sql("COUNT(*) DESC"))
           .limit(8)
           .pluck(
             "doctors.id",
