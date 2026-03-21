@@ -26,4 +26,16 @@ class AppointmentPolicy < ApplicationPolicy
   def complete?
     admin? || receptionist? || doctor?
   end
+
+  def start?
+    admin? || receptionist? || doctor?
+  end
+
+  def no_show?
+    admin? || receptionist? || doctor?
+  end
+
+  def cancel_series?
+    admin? || receptionist? || doctor?
+  end
 end

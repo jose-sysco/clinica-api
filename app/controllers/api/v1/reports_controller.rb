@@ -2,6 +2,11 @@ module Api
   module V1
     class ReportsController < BaseController
       def index
+        unless ActsAsTenant.current_tenant.enabled_features.include?("reports")
+          render json: { error: "Los reportes no están disponibles en tu plan actual." }, status: :forbidden
+          return
+        end
+
         parse_period
         render json: {
           period:                 { start: @start_date, end: @end_date },

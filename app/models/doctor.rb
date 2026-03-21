@@ -32,6 +32,7 @@ class Doctor < ApplicationRecord
   validates :specialty,            presence: true
   validates :consultation_duration, presence: true, numericality: { greater_than: 0 }
   validates :license_number,        uniqueness: true, allow_blank: true
+  validate  :within_doctor_limit,   on: :create
 
   # Scopes
   scope :active, -> { where(status: :active) }
@@ -39,6 +40,15 @@ class Doctor < ApplicationRecord
   # Helpers
   def full_name
     user.full_name
+  end
+
+  private
+
+  def within_doctor_limit
+    return if organization.enabled_features.include?("multi_doctor")
+    if organization.doctors.active.count >= 1
+      errors.add(:base, "Tu plan solo permite 1 doctor activo. Actualiza tu suscripción para agregar más.")
+    end
   end
 
   def available_on?(day_of_week)

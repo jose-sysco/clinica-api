@@ -64,7 +64,6 @@ class Appointment < ApplicationRecord
   scope :by_range,    ->(from, to) { where(scheduled_at: from.to_date.beginning_of_day..to.to_date.end_of_day) }
 
   # Disparar los jobs desde el modelo
-  after_create_commit :schedule_confirmation
   after_update_commit :handle_status_change
 
   private
@@ -121,16 +120,15 @@ class Appointment < ApplicationRecord
     self.confirmed_at = Time.current
   end
 
-  def schedule_confirmation
-    AppointmentConfirmationJob.perform_later(id)
-  end
-
   def handle_status_change
     return unless saved_change_to_status?
 
     case status
     when "confirmed"
       AppointmentConfirmationJob.perform_later(id)
+      # Programar recordatorio 24h antes si la cita es en el futuro
+      reminder_time = scheduled_at - 24.hours
+      AppointmentReminderJob.set(wait_until: reminder_time).perform_later(id) if reminder_time > Time.current
     when "cancelled"
       AppointmentCancellationJob.perform_later(id)
       WaitlistNotificationJob.perform_later(id)

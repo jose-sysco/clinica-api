@@ -31,6 +31,7 @@ class User < ApplicationRecord
   belongs_to :organization
   has_one    :doctor
   has_one    :owner
+  has_many   :notifications
 
   # Enums
   enum :role,   { admin: 0, doctor: 1, receptionist: 2, patient: 3, superadmin: 4 }
