@@ -1,4 +1,20 @@
+require "sidekiq/web"
+
 Rails.application.routes.draw do
+  # ── Health check (sin auth — para load balancers y Docker healthcheck) ──────
+  get "/health", to: "health#show"
+
+  # ── Sidekiq Web UI (Basic Auth en producción, libre en desarrollo) ───────────
+  if Rails.env.production?
+    Sidekiq::Web.use(Rack::Auth::Basic) do |username, password|
+      sidekiq_user = ENV.fetch("SIDEKIQ_WEB_USERNAME", "admin")
+      sidekiq_pass = ENV.fetch("SIDEKIQ_WEB_PASSWORD", "")
+      ActiveSupport::SecurityUtils.secure_compare(username, sidekiq_user) &
+        ActiveSupport::SecurityUtils.secure_compare(password, sidekiq_pass)
+    end
+  end
+  mount Sidekiq::Web => "/sidekiq"
+
   mount Rswag::Ui::Engine => '/api-docs'
   mount Rswag::Api::Engine => '/api-docs'
   namespace :api do
@@ -79,6 +95,9 @@ Rails.application.routes.draw do
       # Waitlist
       resources :waitlist_entries, only: [:index, :create, :update, :destroy]
 
+      # Lookup (público — para resolución de org por email en login)
+      get 'lookup', to: 'lookup#organization'
+
       # Search
       get 'search', to: 'search#index'
     end
@@ -94,5 +113,6 @@ Rails.application.routes.draw do
       resources :plan_configurations, only: [:index, :update]
     end
   end
-  match '*unmatched', to: 'errors#not_found', via: :all
+  match '*unmatched', to: 'errors#not_found', via: :all,
+        constraints: lambda { |req| !req.path.start_with?('/rails/') }
 end
