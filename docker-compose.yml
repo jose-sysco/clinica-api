@@ -1,0 +1,83 @@
+# Uso: docker compose up
+# Levanta Postgres, Redis, la API Rails y el worker Sidekiq.
+# El frontend Next.js corre por separado (npm run dev / su propio Dockerfile).
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     clinica
+      POSTGRES_PASSWORD: clinica_secret
+      POSTGRES_DB:       clinica_api_development
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clinica"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  api:
+    build: .
+    command: ./bin/rails server -p 3010 -b 0.0.0.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      RAILS_ENV:             development
+      DATABASE_URL:          postgresql://clinica:clinica_secret@db:5432/clinica_api_development
+      REDIS_URL:             redis://redis:6379/0
+      DEVISE_JWT_SECRET_KEY: dev_jwt_secret_change_in_production
+      FRONTEND_URL:          http://localhost:3000
+      SIDEKIQ_WEB_USERNAME:  admin
+      SIDEKIQ_WEB_PASSWORD:  changeme
+    ports:
+      - "3010:3010"
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3010/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  worker:
+    build: .
+    command: bundle exec sidekiq
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      RAILS_ENV:             development
+      DATABASE_URL:          postgresql://clinica:clinica_secret@db:5432/clinica_api_development
+      REDIS_URL:             redis://redis:6379/0
+      DEVISE_JWT_SECRET_KEY: dev_jwt_secret_change_in_production
+    volumes:
+      - .:/rails
+      - bundle_cache:/usr/local/bundle
+
+volumes:
+  postgres_data:
+  bundle_cache:
