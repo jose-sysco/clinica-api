@@ -98,7 +98,7 @@ module Api
       def by_day_of_week
         days = %w[Dom Lun Mar Mié Jue Vie Sáb]
         counts = period_scope
-          .group("EXTRACT(DOW FROM scheduled_at AT TIME ZONE 'UTC')::integer")
+          .group(Arel.sql("EXTRACT(DOW FROM scheduled_at AT TIME ZONE 'UTC')::integer"))
           .count
         (0..6).map { |i| { day: days[i], count: counts[i].to_i } }
       end
@@ -120,20 +120,20 @@ module Api
 
         if duration <= 31
           period_scope
-            .group("TO_CHAR(scheduled_at AT TIME ZONE 'UTC', 'YYYY-MM-DD')")
-            .order("1 ASC")
+            .group(Arel.sql("TO_CHAR(scheduled_at AT TIME ZONE 'UTC', 'YYYY-MM-DD')"))
+            .order(Arel.sql("1 ASC"))
             .count
             .map { |d, c| { label: d, total: c } }
         elsif duration <= 92
           period_scope
-            .group("DATE_TRUNC('week', scheduled_at AT TIME ZONE 'UTC')")
-            .order("1 ASC")
+            .group(Arel.sql("DATE_TRUNC('week', scheduled_at AT TIME ZONE 'UTC')"))
+            .order(Arel.sql("1 ASC"))
             .count
             .map { |d, c| { label: d.to_date.strftime("%d %b"), total: c } }
         else
           period_scope
-            .group("TO_CHAR(scheduled_at AT TIME ZONE 'UTC', 'YYYY-MM')")
-            .order("1 ASC")
+            .group(Arel.sql("TO_CHAR(scheduled_at AT TIME ZONE 'UTC', 'YYYY-MM')"))
+            .order(Arel.sql("1 ASC"))
             .count
             .map { |m, c| { label: m, total: c } }
         end
@@ -144,15 +144,15 @@ module Api
       def busiest_doctors
         period_scope
           .joins(doctor: :user)
-          .group("doctors.id", "users.first_name", "users.last_name")
+          .group(Arel.sql("doctors.id, users.first_name, users.last_name"))
           .order(Arel.sql("COUNT(*) DESC"))
           .limit(8)
           .pluck(
             "doctors.id",
             "users.first_name",
             "users.last_name",
-            "COUNT(*)",
-            "SUM(CASE WHEN appointments.status = 3 THEN 1 ELSE 0 END)"
+            Arel.sql("COUNT(*)"),
+            Arel.sql("SUM(CASE WHEN appointments.status = 3 THEN 1 ELSE 0 END)")
           )
           .map do |(doctor_id, first, last, total, completed)|
             total_i     = total.to_i
