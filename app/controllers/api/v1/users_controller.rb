@@ -102,6 +102,7 @@ module Api
             id:                   user.organization.id,
             name:                 user.organization.name,
             slug:                 user.organization.slug,
+            email:                user.organization.email,
             clinic_type:          user.organization.clinic_type,
             status:               user.organization.status,
             plan:                 user.organization.plan,
