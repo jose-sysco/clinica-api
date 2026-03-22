@@ -26,7 +26,8 @@ veterinaria = Organization.create!(
   country:     "Guatemala",
   timezone:    "America/Guatemala",
   clinic_type: :veterinary,
-  status:      :active
+  status:      :active,
+  plan:        :professional
 )
 
 pediatria = Organization.create!(
@@ -38,7 +39,8 @@ pediatria = Organization.create!(
   country:     "Guatemala",
   timezone:    "America/Guatemala",
   clinic_type: :pediatric,
-  status:      :active
+  status:      :active,
+  plan:        :professional
 )
 
 # ─────────────────────────────────────────────────────
