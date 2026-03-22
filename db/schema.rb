@@ -150,7 +150,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_20_224139) do
     t.string "address"
     t.string "city"
     t.string "country"
-    t.string "timezone", default: "UTC", null: false
+    t.string "timezone", default: "America/Guatemala", null: false
     t.string "logo"
     t.integer "clinic_type", default: 0, null: false
     t.integer "status", default: 0, null: false

@@ -11,7 +11,7 @@
 #  address        :string
 #  city           :string
 #  country        :string
-#  timezone       :string           default("UTC"), not null
+#  timezone       :string           default("America/Guatemala"), not null
 #  logo           :string
 #  clinic_type    :integer          default("veterinary"), not null
 #  status         :integer          default("active"), not null
