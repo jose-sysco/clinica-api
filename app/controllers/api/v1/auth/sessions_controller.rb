@@ -136,7 +136,10 @@ module Api
             trial_days_remaining: org.trial_days_remaining,
             trial_expired:        org.trial_expired?,
             on_trial:             org.trial?,
-            features:             org.enabled_features
+            features:             org.enabled_features,
+            logo_url:             org.logo_file.attached? \
+                                    ? rails_blob_url(org.logo_file, host: request.base_url) \
+                                    : org.logo
           }
         end
       end

@@ -37,7 +37,7 @@ module Api
             Doctor.create!(
               organization: ActsAsTenant.current_tenant,
               user: @user,
-              speciality: 'Pendiente de definir',
+              specialty: 'Pendiente de definir',
               consultation_duration: 30,
               status: :active
             )

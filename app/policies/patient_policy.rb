@@ -8,7 +8,7 @@ class PatientPolicy < ApplicationPolicy
   end
 
   def create?
-    admin? || receptionist?
+    admin? || receptionist? || doctor?
   end
 
   def update?

@@ -12,8 +12,10 @@ class DoctorAvailabilityService
     booked_slots = find_booked_slots
     blocked      = find_blocked_ranges
 
+    now = Time.current
+
     slots.reject do |slot|
-      booked?(slot, booked_slots) || blocked?(slot, blocked)
+      booked?(slot, booked_slots) || blocked?(slot, blocked) || slot[:starts_at] <= now
     end
   end
 
@@ -38,9 +40,13 @@ class DoctorAvailabilityService
   end
 
   def find_booked_slots
+    # Use Time.zone so the day window is in the org's local timezone, not UTC.
+    day_start = Time.zone.parse(@date.to_s).beginning_of_day
+    day_end   = Time.zone.parse(@date.to_s).end_of_day
+
     @doctor.appointments
-           .where(status: [:pending, :confirmed, :in_progress])
-           .where(scheduled_at: @date.beginning_of_day..@date.end_of_day)
+           .where(status: [:pending, :confirmed, :in_progress, :completed])
+           .where(scheduled_at: day_start..day_end)
            .pluck(:scheduled_at, :ends_at)
   end
 
@@ -51,14 +57,18 @@ class DoctorAvailabilityService
   end
 
   def booked?(slot, booked_slots)
+    slot_start = slot[:starts_at].utc
+    slot_end   = slot[:ends_at].utc
     booked_slots.any? do |starts, ends|
-      slot[:starts_at] < ends && slot[:ends_at] > starts
+      slot_start < ends.utc && slot_end > starts.utc
     end
   end
 
   def blocked?(slot, blocked_ranges)
+    slot_start = slot[:starts_at].utc
+    slot_end   = slot[:ends_at].utc
     blocked_ranges.any? do |starts, ends|
-      slot[:starts_at] < ends && slot[:ends_at] > starts
+      slot_start < ends.utc && slot_end > starts.utc
     end
   end
 end

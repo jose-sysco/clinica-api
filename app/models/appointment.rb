@@ -92,8 +92,11 @@ class Appointment < ApplicationRecord
   def within_doctor_schedule
     return if scheduled_at.blank?
 
-    day = scheduled_at.wday
-    time = scheduled_at.strftime("%H:%M")
+    # Use Time.zone (set per-request to org's timezone) so we compare
+    # local time against the doctor's local schedule, not UTC.
+    local_time = scheduled_at.in_time_zone
+    day  = local_time.wday
+    time = local_time.strftime("%H:%M")
 
     schedule = doctor.schedules.active.find_by(day_of_week: day)
 

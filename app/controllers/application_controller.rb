@@ -88,6 +88,10 @@ class ApplicationController < ActionController::API
     end
 
     ActsAsTenant.current_tenant = organization
+    # Set request-scoped timezone so all Time operations (slot generation,
+    # comparisons, appointment display) use the org's configured timezone.
+    # Falls back to the app default ('Central America') if not configured.
+    Time.zone = organization.timezone.presence || Rails.application.config.time_zone
   end
 
   def find_organization

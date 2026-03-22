@@ -74,9 +74,10 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.default_url_options = { host: ENV.fetch("API_HOST", "api.clinicaportal.com"), protocol: "https" }
 
-  # SMTP via env vars (compatible con SendGrid, Mailgun, Amazon SES, etc.)
+  # SMTP via env vars (compatible con Resend, SendGrid, Mailgun, Amazon SES, etc.)
   if ENV["SMTP_HOST"].present?
-    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.delivery_method   = :smtp
+    config.action_mailer.perform_deliveries = true
     config.action_mailer.smtp_settings = {
       address:              ENV["SMTP_HOST"],
       port:                 ENV.fetch("SMTP_PORT", 587).to_i,
@@ -85,6 +86,10 @@ Rails.application.configure do
       authentication:       :plain,
       enable_starttls_auto: true
     }
+  else
+    # Sin SMTP configurado: log en consola para no perder errores silenciosos
+    config.action_mailer.delivery_method   = :logger
+    config.action_mailer.perform_deliveries = false
   end
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to
