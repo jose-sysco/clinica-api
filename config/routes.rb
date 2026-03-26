@@ -100,6 +100,9 @@ Rails.application.routes.draw do
       # Planes — configuración pública de planes para comparación en frontend
       get 'plans', to: 'plans#index'
 
+      # Estado de pago del mes actual
+      get 'billing/status', to: 'billing_status#show'
+
       # Lookup (público — para resolución de org por email en login)
       get 'lookup', to: 'lookup#organization'
 

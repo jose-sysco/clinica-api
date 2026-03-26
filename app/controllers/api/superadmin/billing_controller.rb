@@ -10,6 +10,7 @@ module Api
           orgs = Organization
                    .where.not(slug: "sistema-superadmin")
                    .where.not(plan: :trial)
+                   .where("created_at < ?", period_date.next_month)
                    .order(:name)
 
           records      = BillingRecord.where(period: period_date).index_by(&:organization_id)
