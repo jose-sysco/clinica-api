@@ -116,6 +116,7 @@ Rails.application.routes.draw do
       end
       resources :users, only: [:index, :create, :update]
       resources :plan_configurations, only: [:index, :update]
+      resources :billing, only: [:index, :create, :destroy]
     end
   end
   match '*unmatched', to: 'errors#not_found', via: :all,
