@@ -100,6 +100,9 @@ Rails.application.routes.draw do
       # Planes — configuración pública de planes para comparación en frontend
       get 'plans', to: 'plans#index'
 
+      # Estado de pago del mes actual
+      get 'billing/status', to: 'billing_status#show'
+
       # Lookup (público — para resolución de org por email en login)
       get 'lookup', to: 'lookup#organization'
 
@@ -116,6 +119,7 @@ Rails.application.routes.draw do
       end
       resources :users, only: [:index, :create, :update]
       resources :plan_configurations, only: [:index, :update]
+      resources :billing, only: [:index, :create, :destroy]
     end
   end
   match '*unmatched', to: 'errors#not_found', via: :all,

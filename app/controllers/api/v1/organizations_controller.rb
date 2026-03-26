@@ -55,7 +55,7 @@ module Api
       def organization_params
         params.require(:organization).permit(
           :name, :phone, :address, :city, :country,
-          :timezone, :logo, :clinic_type
+          :timezone, :logo, :clinic_type, :primary_color
         )
       end
 
@@ -82,6 +82,7 @@ module Api
           logo_url:             org.logo_file.attached? \
                                   ? rails_blob_url(org.logo_file, host: request.base_url) \
                                   : org.logo,
+          primary_color:        org.primary_color,
         }.merge(plan_config_for(org))
       end
     end
