@@ -109,4 +109,19 @@ class ApplicationController < ActionController::API
   def forbidden
     render json: { error: "No tienes permisos para realizar esta acción" }, status: :forbidden
   end
+
+  # Serializa configuración del plan y uso actual de la organización.
+  # Compartido entre sessions_controller, organizations_controller y users_controller.
+  def plan_config_for(org)
+    config = PlanConfiguration.find_by(plan: org.plan)
+    {
+      plan_display_name:      config&.display_name || org.plan.to_s.capitalize,
+      plan_max_doctors:       config&.max_doctors,
+      plan_max_patients:      config&.max_patients,
+      plan_price_monthly:     config&.price_monthly,
+      plan_price_monthly_usd: config&.price_monthly_usd,
+      doctors_used:           Doctor.where(organization_id: org.id, status: 0).count,
+      patients_used:          Patient.where(organization_id: org.id, status: 0).count,
+    }
+  end
 end

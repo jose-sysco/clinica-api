@@ -139,8 +139,8 @@ module Api
             features:             org.enabled_features,
             logo_url:             org.logo_file.attached? \
                                     ? rails_blob_url(org.logo_file, host: request.base_url) \
-                                    : org.logo
-          }
+                                    : org.logo,
+          }.merge(plan_config_for(org))
         end
       end
     end
