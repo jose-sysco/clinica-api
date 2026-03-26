@@ -84,7 +84,7 @@ class Organization < ApplicationRecord
 
   def set_trial_period
     # La org de administración del sistema nunca tiene trial
-    return if slug == 'clinicaportal-admin'
+    return if slug == 'sistema-superadmin'
     self.trial_ends_at = 15.days.from_now
     self.plan = :trial
   end

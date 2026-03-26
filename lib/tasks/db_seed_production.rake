@@ -80,20 +80,20 @@ namespace :db do
         ActsAsTenant.without_tenant do
           # Organización contenedora del superadmin (no es una clínica real)
           sys_org = Organization.find_or_initialize_by(slug: "sistema-superadmin")
-          if sys_org.new_record?
-            sys_org.assign_attributes(
-              name:        "Sistema",
-              subdomain:   "sistema-superadmin",
-              email:       superadmin_email,
-              country:     "Guatemala",
-              timezone:    "America/Guatemala",
-              clinic_type: :general,
-              status:      :active,
-              plan:        :enterprise
-            )
-            sys_org.save!
-            puts "   organización sistema creada"
-          end
+          is_new = sys_org.new_record?
+          sys_org.assign_attributes(
+            name:         "Sistema",
+            subdomain:    "sistema-superadmin",
+            email:        superadmin_email,
+            country:      "Guatemala",
+            timezone:     "America/Guatemala",
+            clinic_type:  :general,
+            status:       :active,
+            plan:         :enterprise,
+            trial_ends_at: nil
+          )
+          sys_org.save!
+          puts "   organización sistema #{is_new ? 'creada' : 'actualizada'}"
 
           # Usuario superadmin
           superadmin = User.find_or_initialize_by(email: superadmin_email)
