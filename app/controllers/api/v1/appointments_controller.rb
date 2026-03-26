@@ -64,12 +64,8 @@ module Api
         end
 
         @appointment.confirmed!
-
-        reminder_time = @appointment.scheduled_at - 24.hours
-        if reminder_time > Time.current
-          AppointmentReminderJob.set(wait_until: reminder_time).perform_later(@appointment.id)
-        end
-
+        # El modelo (handle_status_change) ya dispara AppointmentConfirmationJob
+        # y programa AppointmentReminderJob — no duplicar aquí.
         render json: { message: 'Cita confirmada correctamente' }, status: :ok
       end
 

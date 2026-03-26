@@ -120,8 +120,8 @@ module Api
             features:             user.organization.enabled_features,
             logo_url:             user.organization.logo_file.attached? \
                                     ? rails_blob_url(user.organization.logo_file, host: request.base_url) \
-                                    : user.organization.logo
-          },
+                                    : user.organization.logo,
+          }.merge(plan_config_for(user.organization)),
           created_at: user.created_at
         }
       end

@@ -1,8 +1,9 @@
 module Api
   module V1
     class PatientsController < BaseController
-      before_action :set_owner, only: [:show, :update, :destroy, :create]
-      before_action :set_patient, only: [:show, :update, :destroy]
+      before_action :set_owner,          only: [:show, :update, :destroy, :create]
+      before_action :set_patient,        only: [:show, :update, :destroy]
+      before_action :check_patient_limit, only: [:create]
 
       def index
         authorize Patient, policy_class: PatientPolicy
@@ -48,6 +49,18 @@ module Api
 
       def set_owner
         @owner = Owner.find(params[:owner_id]) if params[:owner_id]
+      end
+
+      def check_patient_limit
+        config = PlanConfiguration.find_by(plan: ActsAsTenant.current_tenant.plan)
+        return unless config&.max_patients
+
+        if Patient.active.count >= config.max_patients
+          render json: {
+            error: "Has alcanzado el límite de #{config.max_patients} pacientes para tu plan #{config.display_name}. Actualiza tu plan para agregar más.",
+            code:  "patient_limit_reached"
+          }, status: :forbidden
+        end
       end
 
       def set_patient

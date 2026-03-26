@@ -28,19 +28,24 @@ module Api
         end
 
         def create_staff
-          @user = User.new(staff_params)
-          @user.organization = ActsAsTenant.current_tenant
-          @user.status = :active
-          @user.save!
+          ActiveRecord::Base.transaction do
+            @user = User.new(staff_params)
+            @user.organization = ActsAsTenant.current_tenant
+            @user.status = :active
+            @user.save!
 
-          if @user.role == 'doctor'
-            Doctor.create!(
-              organization: ActsAsTenant.current_tenant,
-              user: @user,
-              specialty: 'Pendiente de definir',
-              consultation_duration: 30,
-              status: :active
-            )
+            # Solo crea el Doctor stub cuando se usa este endpoint directamente
+            # (ej: desde gestión de usuarios). El flujo /dashboard/doctors/new
+            # usa DoctorsController#create que maneja todo en su propia transacción.
+            if @user.role == "doctor"
+              Doctor.create!(
+                organization:          ActsAsTenant.current_tenant,
+                user:                  @user,
+                specialty:             "Pendiente de definir",
+                consultation_duration: 30,
+                status:                :active
+              )
+            end
           end
 
           render json: {

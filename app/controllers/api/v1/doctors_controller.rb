@@ -1,7 +1,8 @@
 module Api
   module V1
     class DoctorsController < BaseController
-      before_action :set_doctor, only: [:show, :update, :destroy, :availability, :weekly_appointments]
+      before_action :set_doctor,        only: [:show, :update, :destroy, :availability, :weekly_appointments]
+      before_action :check_doctor_limit, only: [:create]
 
       def index
         authorize Doctor, policy_class: DoctorPolicy
@@ -30,9 +31,36 @@ module Api
 
       def create
         authorize Doctor, policy_class: DoctorPolicy
-        doctor = Doctor.new(doctor_params)
-        doctor.save!
+
+        doctor = nil
+        ActiveRecord::Base.transaction do
+          # Crear usuario con rol doctor
+          user = User.new(user_params_for_doctor)
+          user.organization = ActsAsTenant.current_tenant
+          user.role         = :doctor
+          user.status       = :active
+          user.save!
+
+          # Crear doctor asociado al usuario
+          doctor = Doctor.new(doctor_params)
+          doctor.user         = user
+          doctor.organization = ActsAsTenant.current_tenant
+          doctor.save!
+
+          # Crear horarios si se enviaron
+          Array(params[:schedules]).each do |s|
+            doctor.schedules.create!(
+              day_of_week: s[:day_of_week],
+              start_time:  s[:start_time],
+              end_time:    s[:end_time],
+              is_active:   true
+            )
+          end
+        end
+
         render json: doctor_json(doctor), status: :created
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       end
 
       def update
@@ -132,10 +160,29 @@ module Api
         @doctor = Doctor.find(params[:id])
       end
 
+      def check_doctor_limit
+        config = PlanConfiguration.find_by(plan: ActsAsTenant.current_tenant.plan)
+        return unless config&.max_doctors
+
+        if Doctor.active.count >= config.max_doctors
+          render json: {
+            error: "Has alcanzado el límite de #{config.max_doctors} doctor(es) para tu plan #{config.display_name}. Actualiza tu plan para agregar más.",
+            code:  "doctor_limit_reached"
+          }, status: :forbidden
+        end
+      end
+
       def doctor_params
         params.require(:doctor).permit(
-          :user_id, :specialty, :license_number,
+          :specialty, :license_number,
           :bio, :consultation_duration, :status
+        )
+      end
+
+      def user_params_for_doctor
+        params.require(:user).permit(
+          :first_name, :last_name, :email, :phone,
+          :password, :password_confirmation
         )
       end
 

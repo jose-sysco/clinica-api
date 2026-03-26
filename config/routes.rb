@@ -89,11 +89,16 @@ Rails.application.routes.draw do
       end
 
       # Dashboards
-      get 'dashboard/stats', to: 'dashboard#stats'
-      get "dashboard/reports", to: "reports#index"
+      get 'dashboard/stats',   to: 'dashboard#stats'
+      get 'dashboard/charts',  to: 'dashboard#charts'   # Gráficas básicas (todos los planes)
+      get 'dashboard/alerts',  to: 'dashboard#alerts'   # Alertas operacionales (todos los planes)
+      get 'dashboard/reports', to: 'reports#index'      # Reportes avanzados (plan premium)
 
       # Waitlist
       resources :waitlist_entries, only: [:index, :create, :update, :destroy]
+
+      # Planes — configuración pública de planes para comparación en frontend
+      get 'plans', to: 'plans#index'
 
       # Lookup (público — para resolución de org por email en login)
       get 'lookup', to: 'lookup#organization'

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_20_224139) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_25_120002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -212,6 +212,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_20_224139) do
     t.text "features", default: "[]", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "display_name"
+    t.integer "max_doctors", comment: "null = ilimitado"
+    t.integer "max_patients", comment: "null = ilimitado"
+    t.decimal "price_monthly_usd", precision: 10, scale: 2, default: "0.0"
     t.index ["plan"], name: "index_plan_configurations_on_plan", unique: true
   end
 
