@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_25_120002) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_25_150001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -69,6 +69,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_25_120002) do
     t.index ["owner_id"], name: "index_appointments_on_owner_id"
     t.index ["patient_id"], name: "index_appointments_on_patient_id"
     t.index ["recurrence_group_id"], name: "index_appointments_on_recurrence_group_id"
+  end
+
+  create_table "billing_records", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.date "period", null: false
+    t.decimal "amount_paid", precision: 10, scale: 2, null: false
+    t.string "currency", default: "GTQ", null: false
+    t.text "notes"
+    t.bigint "recorded_by_id", null: false
+    t.datetime "recorded_at", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "period"], name: "index_billing_records_on_organization_id_and_period", unique: true
+    t.index ["organization_id"], name: "index_billing_records_on_organization_id"
   end
 
   create_table "doctors", force: :cascade do |t|
@@ -159,6 +173,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_25_120002) do
     t.integer "plan", default: 0, null: false
     t.datetime "trial_ends_at"
     t.datetime "suspended_at"
+    t.string "primary_color"
     t.index ["email"], name: "index_organizations_on_email", unique: true
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["subdomain"], name: "index_organizations_on_subdomain", unique: true
@@ -308,5 +323,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_25_120002) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "billing_records", "organizations"
+  add_foreign_key "billing_records", "users", column: "recorded_by_id"
   add_foreign_key "refresh_tokens", "users"
 end
