@@ -40,7 +40,7 @@ RSpec.describe 'Owners API', type: :request do
               address:        { type: :string,  example: 'Zona 10, Guatemala' },
               identification: { type: :string,  example: '1234567' }
             },
-            required: ['first_name', 'last_name', 'phone']
+            required: [ 'first_name', 'last_name', 'phone' ]
           }
         }
       }
@@ -90,15 +90,15 @@ RSpec.describe 'Owners API', type: :request do
             type: :object,
             properties: {
               name:         { type: :string,  example: 'Firulais' },
-              patient_type: { type: :string,  example: 'animal', enum: ['human', 'animal'] },
+              patient_type: { type: :string,  example: 'animal', enum: [ 'human', 'animal' ] },
               species:      { type: :string,  example: 'Perro' },
               breed:        { type: :string,  example: 'Labrador' },
-              gender:       { type: :string,  example: 'male', enum: ['unknown', 'male', 'female'] },
+              gender:       { type: :string,  example: 'male', enum: [ 'unknown', 'male', 'female' ] },
               birthdate:    { type: :string,  example: '2020-01-01' },
               weight:       { type: :number,  example: 25.5 },
               notes:        { type: :string,  example: 'Alérgico a la penicilina' }
             },
-            required: ['name', 'patient_type', 'gender']
+            required: [ 'name', 'patient_type', 'gender' ]
           }
         }
       }

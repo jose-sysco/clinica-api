@@ -21,9 +21,9 @@ RSpec.describe 'Auth API', type: :request do
               city:        { type: :string, example: 'Guatemala' },
               country:     { type: :string, example: 'Guatemala' },
               timezone:    { type: :string, example: 'America/Guatemala' },
-              clinic_type: { type: :string, example: 'veterinary', enum: ['veterinary', 'pediatric', 'general', 'dental'] }
+              clinic_type: { type: :string, example: 'veterinary', enum: [ 'veterinary', 'pediatric', 'general', 'dental' ] }
             },
-            required: ['name', 'subdomain', 'email', 'clinic_type']
+            required: [ 'name', 'subdomain', 'email', 'clinic_type' ]
           },
           user: {
             type: :object,
@@ -35,7 +35,7 @@ RSpec.describe 'Auth API', type: :request do
               password:              { type: :string, example: 'password123' },
               password_confirmation: { type: :string, example: 'password123' }
             },
-            required: ['first_name', 'last_name', 'email', 'password', 'password_confirmation']
+            required: [ 'first_name', 'last_name', 'email', 'password', 'password_confirmation' ]
           }
         }
       }
@@ -77,7 +77,7 @@ RSpec.describe 'Auth API', type: :request do
               email:    { type: :string, example: 'carlos@patitas.com' },
               password: { type: :string, example: 'password123' }
             },
-            required: ['email', 'password']
+            required: [ 'email', 'password' ]
           }
         }
       }

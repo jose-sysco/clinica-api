@@ -15,7 +15,7 @@ class RefreshToken < ApplicationRecord
       expires_at:   30.days.from_now
     )
 
-    [raw, record]
+    [ raw, record ]
   end
 
   # ── Lookup ───────────────────────────────────────────────────────────────────

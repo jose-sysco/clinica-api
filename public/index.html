@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Clinica API</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --border: #2a2d3a;
+      --accent: #6366f1;
+      --accent-hover: #4f52d9;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --radius: 10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container { max-width: 860px; margin: 0 auto; }
+
+    /* ── Header ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .logo {
+      width: 44px; height: 44px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; }
+    .subtitle { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+    /* ── Port configurator ── */
+    .port-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .port-box label { color: var(--muted); font-size: 0.82rem; white-space: nowrap; }
+    .port-box input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: monospace;
+      padding: 6px 10px;
+      width: 90px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .port-box input:focus { border-color: var(--accent); }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 16px;
+      font-size: 0.87rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn:hover { background: var(--accent-hover); }
+
+    /* ── Status card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 20px;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .card-title { font-size: 0.9rem; font-weight: 600; text-transform: uppercase;
+                  letter-spacing: 0.06em; color: var(--muted); }
+
+    .status-row {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 1rem; font-weight: 500;
+    }
+    .dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+      background: var(--muted);
+    }
+    .dot.ok   { background: var(--green); box-shadow: 0 0 8px var(--green); }
+    .dot.err  { background: var(--red);   box-shadow: 0 0 8px var(--red); }
+    .dot.spin { animation: pulse 1s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .base-url {
+      font-family: monospace;
+      font-size: 0.85rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: var(--accent);
+      word-break: break-all;
+      margin-top: 10px;
+    }
+
+    /* ── Endpoints grid ── */
+    .endpoints { display: flex; flex-direction: column; gap: 8px; }
+    .endpoint {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      font-size: 0.87rem;
+      font-family: monospace;
+      background: var(--bg);
+      transition: border-color 0.15s;
+    }
+    .endpoint:hover { border-color: var(--accent); }
+    .method {
+      display: inline-block;
+      min-width: 52px;
+      text-align: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .GET    { background: #0d3321; color: var(--green); }
+    .POST   { background: #1a1236; color: #a78bfa; }
+    .PATCH  { background: #2d1b00; color: var(--yellow); }
+    .DELETE { background: #2d0a0a; color: var(--red); }
+
+    .path { color: var(--text); flex: 1; }
+    .desc { color: var(--muted); font-family: sans-serif; font-size: 0.78rem; text-align: right; }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="brand">
+      <div class="logo">🏥</div>
+      <div>
+        <h1>Clinica API</h1>
+        <div class="subtitle">Rails 7.2 · Multi-tenant SaaS backend</div>
+      </div>
+    </div>
+
+    <div class="port-box">
+      <label for="portInput">Port</label>
+      <input id="portInput" type="number" min="1" max="65535" value="3010" />
+      <button class="btn" onclick="applyPort()">Apply</button>
+    </div>
+  </header>
+
+  <!-- Status -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Server Status</span>
+      <button class="btn" onclick="checkHealth()" style="padding:5px 12px;font-size:0.8rem;">Refresh</button>
+    </div>
+    <div class="status-row">
+      <div class="dot spin" id="statusDot"></div>
+      <span id="statusText">Checking…</span>
+    </div>
+    <div class="base-url" id="baseUrl"></div>
+  </div>
+
+  <!-- Endpoints -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">Available Endpoints</span>
+    </div>
+    <div class="endpoints" id="endpointList"></div>
+  </div>
+
+  <footer>
+    API Docs: <a id="docsLink" href="#" target="_blank">Swagger UI</a>
+    &nbsp;·&nbsp;
+    Sidekiq: <a id="sidekiqLink" href="#" target="_blank">/sidekiq</a>
+    &nbsp;·&nbsp;
+    Health: <a id="healthLink" href="#" target="_blank">/health</a>
+  </footer>
+
+</div>
+
+<script>
+  const ENDPOINTS = [
+    // Public
+    { method:"GET",    path:"/health",                          desc:"Health check" },
+    { method:"GET",    path:"/api/v1/lookup?email=",            desc:"Org lookup by email" },
+    // Auth
+    { method:"POST",   path:"/api/v1/auth/sign_up",             desc:"Register organization" },
+    { method:"POST",   path:"/api/v1/auth/sign_in",             desc:"Login" },
+    { method:"DELETE", path:"/api/v1/auth/sign_out",            desc:"Logout" },
+    { method:"POST",   path:"/api/v1/auth/refresh",             desc:"Refresh token" },
+    { method:"POST",   path:"/api/v1/auth/forgot_password",     desc:"Forgot password" },
+    { method:"POST",   path:"/api/v1/auth/reset_password",      desc:"Reset password" },
+    // Me
+    { method:"GET",    path:"/api/v1/me",                       desc:"Current user" },
+    { method:"PATCH",  path:"/api/v1/me",                       desc:"Update profile" },
+    { method:"PATCH",  path:"/api/v1/me/change_password",       desc:"Change password" },
+    // Organization
+    { method:"GET",    path:"/api/v1/organization",             desc:"Get organization" },
+    { method:"PATCH",  path:"/api/v1/organization",             desc:"Update organization" },
+    // Doctors
+    { method:"GET",    path:"/api/v1/doctors",                  desc:"List doctors" },
+    { method:"POST",   path:"/api/v1/doctors",                  desc:"Create doctor" },
+    { method:"GET",    path:"/api/v1/doctors/:id",              desc:"Get doctor" },
+    { method:"GET",    path:"/api/v1/doctors/:id/availability", desc:"Doctor availability slots" },
+    // Appointments
+    { method:"GET",    path:"/api/v1/appointments",             desc:"List appointments" },
+    { method:"POST",   path:"/api/v1/appointments",             desc:"Create appointment" },
+    { method:"GET",    path:"/api/v1/appointments/:id",         desc:"Get appointment" },
+    { method:"PATCH",  path:"/api/v1/appointments/:id/confirm", desc:"Confirm appointment" },
+    { method:"PATCH",  path:"/api/v1/appointments/:id/cancel",  desc:"Cancel appointment" },
+    { method:"PATCH",  path:"/api/v1/appointments/:id/complete",desc:"Complete appointment" },
+    // Patients / Owners
+    { method:"GET",    path:"/api/v1/owners",                   desc:"List owners" },
+    { method:"POST",   path:"/api/v1/owners",                   desc:"Create owner" },
+    { method:"GET",    path:"/api/v1/patients",                 desc:"List patients" },
+    { method:"GET",    path:"/api/v1/patients/:id",             desc:"Get patient" },
+    // Medical Records
+    { method:"GET",    path:"/api/v1/medical_records",          desc:"List records" },
+    { method:"POST",   path:"/api/v1/medical_records",          desc:"Create record" },
+    // Dashboard
+    { method:"GET",    path:"/api/v1/dashboard/stats",          desc:"Dashboard stats" },
+    { method:"GET",    path:"/api/v1/dashboard/reports",        desc:"Reports" },
+    // Search & Notifications
+    { method:"GET",    path:"/api/v1/search",                   desc:"Global search" },
+    { method:"GET",    path:"/api/v1/notifications",            desc:"Notifications" },
+  ];
+
+  function getPort() {
+    return parseInt(document.getElementById("portInput").value, 10) || 3010;
+  }
+
+  function baseURL() {
+    return `http://localhost:${getPort()}`;
+  }
+
+  function renderLinks() {
+    const base = baseURL();
+    document.getElementById("baseUrl").textContent = base + "/api/v1/";
+    document.getElementById("docsLink").href    = base + "/api-docs";
+    document.getElementById("sidekiqLink").href  = base + "/sidekiq";
+    document.getElementById("healthLink").href   = base + "/health";
+  }
+
+  function renderEndpoints() {
+    const base = baseURL();
+    document.getElementById("endpointList").innerHTML = ENDPOINTS.map(e => `
+      <div class="endpoint">
+        <span class="method ${e.method}">${e.method}</span>
+        <span class="path">${base}${e.path}</span>
+        <span class="desc">${e.desc}</span>
+      </div>
+    `).join("");
+  }
+
+  async function checkHealth() {
+    const dot  = document.getElementById("statusDot");
+    const text = document.getElementById("statusText");
+    dot.className  = "dot spin";
+    text.textContent = "Checking…";
+
+    try {
+      const res = await fetch(baseURL() + "/health", { signal: AbortSignal.timeout(5000) });
+      const json = await res.json().catch(() => ({}));
+      if (res.ok) {
+        dot.className  = "dot ok";
+        text.textContent = `Online — ${json.status ?? "OK"} (HTTP ${res.status})`;
+      } else {
+        dot.className  = "dot err";
+        text.textContent = `HTTP ${res.status} — check server logs`;
+      }
+    } catch (err) {
+      dot.className  = "dot err";
+      text.textContent = `Unreachable on port ${getPort()} — is the server running?`;
+    }
+  }
+
+  function applyPort() {
+    renderLinks();
+    renderEndpoints();
+    checkHealth();
+  }
+
+  // Init — read port from ?port= query param if present
+  const params = new URLSearchParams(location.search);
+  if (params.has("port")) {
+    document.getElementById("portInput").value = params.get("port");
+  }
+  applyPort();
+</script>
+</body>
+</html>

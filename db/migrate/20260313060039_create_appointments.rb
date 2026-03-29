@@ -22,8 +22,8 @@ class CreateAppointments < ActiveRecord::Migration[7.2]
     add_index :appointments, :doctor_id
     add_index :appointments, :patient_id
     add_index :appointments, :owner_id
-    add_index :appointments, [:doctor_id, :scheduled_at, :ends_at]
-    add_index :appointments, [:organization_id, :status]
-    add_index :appointments, [:doctor_id, :status]
+    add_index :appointments, [ :doctor_id, :scheduled_at, :ends_at ]
+    add_index :appointments, [ :organization_id, :status ]
+    add_index :appointments, [ :doctor_id, :status ]
   end
 end

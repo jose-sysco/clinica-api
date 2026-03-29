@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_25_150001) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_28_000003) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -95,6 +95,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_25_150001) do
     t.integer "status", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "inventory_movements", default: false, null: false
     t.index ["license_number"], name: "index_doctors_on_license_number", unique: true
     t.index ["organization_id"], name: "index_doctors_on_organization_id"
     t.index ["user_id"], name: "index_doctors_on_user_id"
@@ -234,6 +235,23 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_25_150001) do
     t.index ["plan"], name: "index_plan_configurations_on_plan", unique: true
   end
 
+  create_table "products", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "name", null: false
+    t.string "description"
+    t.string "category"
+    t.string "unit", default: "unidad", null: false
+    t.decimal "current_stock", precision: 10, scale: 2, default: "0.0", null: false
+    t.decimal "min_stock", precision: 10, scale: 2, default: "0.0", null: false
+    t.string "sku"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id", "active"], name: "index_products_on_organization_id_and_active"
+    t.index ["organization_id", "name"], name: "index_products_on_organization_id_and_name"
+    t.index ["organization_id"], name: "index_products_on_organization_id"
+  end
+
   create_table "refresh_tokens", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "token_digest", null: false
@@ -271,6 +289,30 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_25_150001) do
     t.index ["doctor_id", "day_of_week"], name: "index_schedules_on_doctor_id_and_day_of_week", unique: true
     t.index ["doctor_id"], name: "index_schedules_on_doctor_id"
     t.index ["organization_id"], name: "index_schedules_on_organization_id"
+  end
+
+  create_table "stock_movements", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "product_id", null: false
+    t.bigint "user_id", null: false
+    t.bigint "doctor_id"
+    t.bigint "medical_record_id"
+    t.integer "movement_type", null: false
+    t.decimal "quantity", precision: 10, scale: 2, null: false
+    t.decimal "stock_before", precision: 10, scale: 2, null: false
+    t.decimal "stock_after", precision: 10, scale: 2, null: false
+    t.string "lot_number"
+    t.date "expiration_date"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["doctor_id"], name: "index_stock_movements_on_doctor_id"
+    t.index ["expiration_date"], name: "index_stock_movements_on_expiration_date"
+    t.index ["medical_record_id"], name: "index_stock_movements_on_medical_record_id"
+    t.index ["movement_type"], name: "index_stock_movements_on_movement_type"
+    t.index ["organization_id"], name: "index_stock_movements_on_organization_id"
+    t.index ["product_id"], name: "index_stock_movements_on_product_id"
+    t.index ["user_id"], name: "index_stock_movements_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -325,5 +367,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_25_150001) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "billing_records", "organizations"
   add_foreign_key "billing_records", "users", column: "recorded_by_id"
+  add_foreign_key "products", "organizations"
   add_foreign_key "refresh_tokens", "users"
+  add_foreign_key "stock_movements", "doctors"
+  add_foreign_key "stock_movements", "medical_records"
+  add_foreign_key "stock_movements", "organizations"
+  add_foreign_key "stock_movements", "products"
+  add_foreign_key "stock_movements", "users"
 end

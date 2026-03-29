@@ -9,7 +9,7 @@ module Api
           organization = Organization.find_by(slug: params[:slug], status: :active)
 
           if organization.nil?
-            render json: { error: 'Organización no encontrada' }, status: :not_found
+            render json: { error: "Organización no encontrada" }, status: :not_found
             return
           end
 
@@ -31,7 +31,7 @@ module Api
           end
 
           render json: {
-            message: 'Si el email existe recibirás instrucciones para restablecer tu contraseña'
+            message: "Si el email existe recibirás instrucciones para restablecer tu contraseña"
           }, status: :ok
         end
 
@@ -39,7 +39,7 @@ module Api
           organization = Organization.find_by(slug: params[:slug], status: :active)
 
           if organization.nil?
-            render json: { error: 'Organización no encontrada' }, status: :not_found
+            render json: { error: "Organización no encontrada" }, status: :not_found
             return
           end
 
@@ -51,7 +51,7 @@ module Api
             )
 
             if user.errors.empty?
-              render json: { message: 'Contraseña restablecida correctamente' }, status: :ok
+              render json: { message: "Contraseña restablecida correctamente" }, status: :ok
             else
               render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
             end

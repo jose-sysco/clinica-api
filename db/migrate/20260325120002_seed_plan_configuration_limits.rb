@@ -6,7 +6,7 @@ class SeedPlanConfigurationLimits < ActiveRecord::Migration[7.2]
     0 => { display_name: "Free Trial",   max_doctors: 2,   max_patients: 50,   price_monthly_usd: 0.00 },
     1 => { display_name: "Starter",      max_doctors: 3,   max_patients: 200,  price_monthly_usd: 20.00 },
     2 => { display_name: "Pro",          max_doctors: 10,  max_patients: 1000, price_monthly_usd: 50.00 },
-    3 => { display_name: "Enterprise",   max_doctors: nil, max_patients: nil,  price_monthly_usd: 400.00 },
+    3 => { display_name: "Enterprise",   max_doctors: nil, max_patients: nil,  price_monthly_usd: 400.00 }
   }.freeze
 
   # También fija price_monthly (GTQ) si aún está en 0

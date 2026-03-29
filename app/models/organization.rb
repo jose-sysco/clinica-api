@@ -67,7 +67,7 @@ class Organization < ApplicationRecord
   def trial_days_remaining
     return 0 unless trial? && trial_ends_at.present?
     days = ((trial_ends_at - Time.current) / 1.day).ceil
-    [days, 0].max
+    [ days, 0 ].max
   end
 
   def enabled_features
@@ -84,7 +84,7 @@ class Organization < ApplicationRecord
 
   def set_trial_period
     # La org de administración del sistema nunca tiene trial
-    return if slug == 'sistema-superadmin'
+    return if slug == "sistema-superadmin"
     self.trial_ends_at = 15.days.from_now
     self.plan = :trial
   end
@@ -92,11 +92,11 @@ class Organization < ApplicationRecord
   def generate_slug
     self.slug = name
       .unicode_normalize(:nfd)
-      .gsub(/\p{Mn}/, '')
+      .gsub(/\p{Mn}/, "")
       .downcase
-      .gsub(/[^a-z0-9\s\-]/, '')
-      .gsub(/\s+/, '-')
-      .gsub(/-+/, '-')
+      .gsub(/[^a-z0-9\s\-]/, "")
+      .gsub(/\s+/, "-")
+      .gsub(/-+/, "-")
       .strip
   end
 

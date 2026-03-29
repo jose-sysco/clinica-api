@@ -2,8 +2,8 @@ module Api
   module V1
     module Auth
       class RegistrationsController < ApplicationController
-        skip_before_action :authenticate_user!, only: [:create]
-        skip_before_action :set_tenant, only: [:create]
+        skip_before_action :authenticate_user!, only: [ :create ]
+        skip_before_action :set_tenant, only: [ :create ]
 
         def create
           ActiveRecord::Base.transaction do

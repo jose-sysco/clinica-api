@@ -11,8 +11,8 @@ RSpec.describe 'Appointments API', type: :request do
       parameter name: :per_page,         in: :query, type: :integer, required: false
       parameter name: :doctor_id,        in: :query, type: :integer, required: false
       parameter name: :patient_id,       in: :query, type: :integer, required: false
-      parameter name: :status,           in: :query, type: :string,  required: false, enum: ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show']
-      parameter name: :appointment_type, in: :query, type: :string,  required: false, enum: ['first_visit', 'follow_up', 'emergency', 'routine']
+      parameter name: :status,           in: :query, type: :string,  required: false, enum: [ 'pending', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show' ]
+      parameter name: :appointment_type, in: :query, type: :string,  required: false, enum: [ 'first_visit', 'follow_up', 'emergency', 'routine' ]
       parameter name: :date,             in: :query, type: :string,  required: false, description: 'Formato YYYY-MM-DD'
       parameter name: :from,             in: :query, type: :string,  required: false, description: 'Formato YYYY-MM-DD'
       parameter name: :to,               in: :query, type: :string,  required: false, description: 'Formato YYYY-MM-DD'
@@ -49,7 +49,7 @@ RSpec.describe 'Appointments API', type: :request do
               appointment_type: { type: :string,  example: 'first_visit' },
               reason:           { type: :string,  example: 'Revisión general' }
             },
-            required: ['doctor_id', 'patient_id', 'owner_id', 'scheduled_at', 'appointment_type', 'reason']
+            required: [ 'doctor_id', 'patient_id', 'owner_id', 'scheduled_at', 'appointment_type', 'reason' ]
           }
         }
       }

@@ -17,16 +17,16 @@ module Api
 
         # ── Citas hoy ─────────────────────────────────────────────────────────
         appts_today     = appt_scope.where(scheduled_at: today.beginning_of_day..today.end_of_day)
-        today_total     = appts_today.where.not(status: [:cancelled, :no_show]).count
+        today_total     = appts_today.where.not(status: [ :cancelled, :no_show ]).count
         today_pending   = appts_today.where(status: :pending).count
         today_confirmed = appts_today.where(status: :confirmed).count
         today_completed = appts_today.where(status: :completed).count
 
         # ── Tendencia semana actual vs anterior ───────────────────────────────
         this_week_count = appt_scope.where(scheduled_at: week_start.beginning_of_day..week_end.end_of_day)
-                                    .where.not(status: [:cancelled, :no_show]).count
+                                    .where.not(status: [ :cancelled, :no_show ]).count
         last_week_count = appt_scope.where(scheduled_at: last_week_start.beginning_of_day..last_week_end.end_of_day)
-                                    .where.not(status: [:cancelled, :no_show]).count
+                                    .where.not(status: [ :cancelled, :no_show ]).count
         week_change = last_week_count > 0 ? (((this_week_count - last_week_count).to_f / last_week_count) * 100).round(1) : nil
 
         # ── Nuevos pacientes esta semana vs anterior ──────────────────────────
@@ -35,7 +35,7 @@ module Api
         patients_change    = patients_last_week > 0 ? (((patients_this_week - patients_last_week).to_f / patients_last_week) * 100).round(1) : nil
 
         # ── Tasa de asistencia (últimos 30 días) ──────────────────────────────
-        last_30      = appt_scope.where(scheduled_at: 30.days.ago..Time.current).where.not(status: [:cancelled, :no_show])
+        last_30      = appt_scope.where(scheduled_at: 30.days.ago..Time.current).where.not(status: [ :cancelled, :no_show ])
         total_30     = last_30.count
         completed_30 = last_30.where(status: :completed).count
         attendance_rate = total_30 > 0 ? ((completed_30.to_f / total_30) * 100).round(1) : nil
@@ -43,14 +43,14 @@ module Api
         # ── Próximas citas de hoy ─────────────────────────────────────────────
         upcoming = appt_scope.includes(:patient, :doctor)
                              .where(scheduled_at: Time.current..today.end_of_day)
-                             .where.not(status: [:cancelled, :no_show, :completed])
+                             .where.not(status: [ :cancelled, :no_show, :completed ])
                              .order(:scheduled_at)
                              .limit(6)
 
         # ── Horas pico semana actual (en timezone de la org) ──────────────────
         peak_hours = appt_scope
           .where(scheduled_at: week_start.beginning_of_day..week_end.end_of_day)
-          .where.not(status: [:cancelled, :no_show])
+          .where.not(status: [ :cancelled, :no_show ])
           .group(Arel.sql("EXTRACT(HOUR FROM scheduled_at AT TIME ZONE '#{tz}')::integer"))
           .order(Arel.sql("1 ASC"))
           .count
@@ -108,12 +108,12 @@ module Api
           completed: status_counts["completed"].to_i,
           confirmed: status_counts["confirmed"].to_i,
           pending:   status_counts["pending"].to_i,
-          cancelled: status_counts["cancelled"].to_i,
+          cancelled: status_counts["cancelled"].to_i
         }
 
         render json: {
           appointments_by_month: appointments_by_month,
-          cancellation_stats:    cancellation_stats,
+          cancellation_stats:    cancellation_stats
         }
       end
 

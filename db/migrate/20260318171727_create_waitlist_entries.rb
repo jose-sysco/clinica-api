@@ -13,7 +13,7 @@ class CreateWaitlistEntries < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :waitlist_entries, [:organization_id, :doctor_id, :status]
-    add_index :waitlist_entries, [:organization_id, :patient_id]
+    add_index :waitlist_entries, [ :organization_id, :doctor_id, :status ]
+    add_index :waitlist_entries, [ :organization_id, :patient_id ]
   end
 end

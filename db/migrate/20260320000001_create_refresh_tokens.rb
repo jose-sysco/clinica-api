@@ -9,6 +9,6 @@ class CreateRefreshTokens < ActiveRecord::Migration[7.2]
     end
 
     add_index :refresh_tokens, :token_digest, unique: true
-    add_index :refresh_tokens, [:user_id, :revoked_at]
+    add_index :refresh_tokens, [ :user_id, :revoked_at ]
   end
 end

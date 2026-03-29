@@ -1,8 +1,8 @@
 module Api
   module V1
     class MedicalRecordsController < BaseController
-      before_action :set_patient,        only: [:patient_records]
-      before_action :set_medical_record, only: [:show, :update]
+      before_action :set_patient,        only: [ :patient_records ]
+      before_action :set_medical_record, only: [ :show, :update ]
 
       # GET /api/v1/medical_records — todos los expedientes de la org (paginado)
       def index
@@ -38,6 +38,27 @@ module Api
         record.save!
 
         appointment.completed!
+
+        # Auto-deduct inventory if doctor has inventory_movements enabled
+        used = Array(params[:medical_record][:used_products])
+        if used.any? && record.doctor&.inventory_movements?
+          used.each do |entry|
+            product = Product.find_by(id: entry[:product_id])
+            next unless product && entry[:quantity].to_f > 0
+
+            product.stock_movements.create!(
+              organization:    ActsAsTenant.current_tenant,
+              user:            current_user,
+              doctor:          record.doctor,
+              medical_record:  record,
+              movement_type:   :exit,
+              quantity:        entry[:quantity].to_f,
+              notes:           "Consulta ##{appointment.id} — #{record.doctor.full_name}"
+            )
+          rescue ActiveRecord::RecordInvalid
+            # Don't fail the whole record if stock is already 0 — just skip
+          end
+        end
 
         render json: medical_record_json(record), status: :created
 

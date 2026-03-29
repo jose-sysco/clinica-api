@@ -7,14 +7,14 @@ class PlanConfiguration < ApplicationRecord
     "whatsapp_notifications" => { label: "Notificaciones por WhatsApp", category: "communication" },
     "multi_doctor"           => { label: "Múltiples doctores",          category: "team" },
     "inventory"              => { label: "Inventario de medicinas",     category: "advanced" },
-    "custom_branding"        => { label: "Marca personalizada",         category: "advanced" },
+    "custom_branding"        => { label: "Marca personalizada",         category: "advanced" }
   }.freeze
 
   PLAN_DEFAULTS = {
     "trial"        => %w[appointments medical_records notifications],
     "basic"        => %w[appointments medical_records notifications reports],
     "professional" => %w[appointments medical_records notifications reports whatsapp_notifications multi_doctor],
-    "enterprise"   => FEATURES.keys,
+    "enterprise"   => FEATURES.keys
   }.freeze
 
   enum :plan, { trial: 0, basic: 1, professional: 2, enterprise: 3 }

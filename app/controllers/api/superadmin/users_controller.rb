@@ -10,7 +10,7 @@ module Api
 
       def create
         ActsAsTenant.without_tenant do
-          superadmin_org = Organization.find_by!(slug: 'clinicaportal-admin')
+          superadmin_org = Organization.find_by!(slug: "clinicaportal-admin")
 
           user = User.new(user_params)
           user.organization = superadmin_org

@@ -37,9 +37,9 @@ module Api
           updates[:status]        = params[:status]        if params[:status].present?
           updates[:trial_ends_at] = params[:trial_ends_at] if params[:trial_ends_at].present?
 
-          if params[:status] == 'suspended'
+          if params[:status] == "suspended"
             updates[:suspended_at] = Time.current
-          elsif params[:status] == 'active'
+          elsif params[:status] == "active"
             updates[:suspended_at] = nil
           end
 

@@ -81,7 +81,7 @@ class Appointment < ApplicationRecord
 
     overlapping = Appointment.where(doctor_id: doctor_id)
                              .where.not(id: id)
-                             .where.not(status: [:cancelled, :no_show])
+                             .where.not(status: [ :cancelled, :no_show ])
                              .where("scheduled_at < ? AND ends_at > ?", ends_at, scheduled_at)
 
     if overlapping.exists?
@@ -143,9 +143,9 @@ class Appointment < ApplicationRecord
     return unless status_changed?
 
     allowed = {
-      "pending"     => ["confirmed", "cancelled", "no_show"],
-      "confirmed"   => ["in_progress", "cancelled", "completed", "no_show"],
-      "in_progress" => ["completed", "no_show"],
+      "pending"     => [ "confirmed", "cancelled", "no_show" ],
+      "confirmed"   => [ "in_progress", "cancelled", "completed", "no_show" ],
+      "in_progress" => [ "completed", "no_show" ],
       "completed"   => [],
       "cancelled"   => [],
       "no_show"     => []

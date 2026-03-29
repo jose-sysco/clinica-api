@@ -5,9 +5,9 @@
 
 allowed_origins = if Rails.env.production?
   frontend = ENV.fetch("FRONTEND_URL", nil)
-  frontend ? [frontend] : []
+  frontend ? [ frontend ] : []
 else
-  ["*"]
+  [ "*" ]
 end
 
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
@@ -16,7 +16,7 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
 
     resource "*",
       headers: :any,
-      expose: ["Authorization"],
-      methods: [:get, :post, :put, :patch, :delete, :options, :head]
+      expose: [ "Authorization" ],
+      methods: [ :get, :post, :put, :patch, :delete, :options, :head ]
   end
 end

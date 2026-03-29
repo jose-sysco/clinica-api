@@ -1,8 +1,8 @@
 module Api
   module V1
     class OrganizationsController < BaseController
-      skip_before_action :authenticate_user!, only: [:create]
-      skip_before_action :set_tenant,         only: [:create]
+      skip_before_action :authenticate_user!, only: [ :create ]
+      skip_before_action :set_tenant,         only: [ :create ]
 
       def show
         authorize ActsAsTenant.current_tenant, policy_class: OrganizationPolicy
@@ -82,7 +82,7 @@ module Api
           logo_url:             org.logo_file.attached? \
                                   ? rails_blob_url(org.logo_file, host: request.base_url) \
                                   : org.logo,
-          primary_color:        org.primary_color,
+          primary_color:        org.primary_color
         }.merge(plan_config_for(org))
       end
     end

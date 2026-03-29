@@ -1,8 +1,8 @@
 module Api
   module V1
     class DoctorsController < BaseController
-      before_action :set_doctor,        only: [:show, :update, :destroy, :availability, :weekly_appointments]
-      before_action :check_doctor_limit, only: [:create]
+      before_action :set_doctor,        only: [ :show, :update, :destroy, :availability, :weekly_appointments ]
+      before_action :check_doctor_limit, only: [ :create ]
 
       def index
         authorize Doctor, policy_class: DoctorPolicy
@@ -120,12 +120,12 @@ module Api
         appointments = Appointment.includes(:patient, :owner)
                                   .where(doctor: @doctor.id)
                                   .where(scheduled_at: start_of_week.beginning_of_day..end_of_week.end_of_day)
-                                  .where.not(status: [:cancelled, :no_show])
+                                  .where.not(status: [ :cancelled, :no_show ])
                                   .order(:scheduled_at)
 
         today_count = Appointment.where(doctor: @doctor.id)
                                  .where(scheduled_at: Date.today.beginning_of_day..Date.today.end_of_day)
-                                 .where.not(status: [:cancelled, :no_show])
+                                 .where.not(status: [ :cancelled, :no_show ])
                                  .count
 
         render json: {
@@ -175,7 +175,7 @@ module Api
       def doctor_params
         params.require(:doctor).permit(
           :specialty, :license_number,
-          :bio, :consultation_duration, :status
+          :bio, :consultation_duration, :status, :inventory_movements
         )
       end
 
@@ -191,7 +191,7 @@ module Api
         today       = Date.today
         week_start  = today.beginning_of_week(:sunday)
         week_end    = today.end_of_week(:sunday)
-        base_scope  = doctor.appointments.where.not(status: [:cancelled, :no_show])
+        base_scope  = doctor.appointments.where.not(status: [ :cancelled, :no_show ])
         next_appt   = base_scope.where("scheduled_at > ?", Time.current)
                                 .order(:scheduled_at)
                                 .includes(:patient)
@@ -207,6 +207,7 @@ module Api
           bio:                   doctor.bio,
           consultation_duration: doctor.consultation_duration,
           status:                doctor.status,
+          inventory_movements:   doctor.inventory_movements,
           schedules:             doctor.schedules.map { |s| schedule_json(s) },
           appointments_today:    base_scope.where(scheduled_at: today.beginning_of_day..today.end_of_day).count,
           appointments_this_week: base_scope.where(scheduled_at: week_start.beginning_of_day..week_end.end_of_day).count,

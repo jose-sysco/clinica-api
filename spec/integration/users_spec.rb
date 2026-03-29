@@ -68,7 +68,7 @@ RSpec.describe 'Users API', type: :request do
           password:              { type: :string, example: 'newpassword456' },
           password_confirmation: { type: :string, example: 'newpassword456' }
         },
-        required: ['current_password', 'password', 'password_confirmation']
+        required: [ 'current_password', 'password', 'password_confirmation' ]
       }
 
       response '200', 'Contraseña actualizada' do

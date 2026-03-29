@@ -16,7 +16,7 @@ module Api
           by_day_of_week:         by_day_of_week,
           by_type:                by_appointment_type,
           appointments_by_period: appointments_by_period,
-          busiest_doctors:        busiest_doctors,
+          busiest_doctors:        busiest_doctors
         }
       end
 
@@ -71,7 +71,7 @@ module Api
           prev_total:             total_prev,
           prev_completed:         prev[:completed].to_i,
           prev_completion_rate:   pct(prev[:completed], total_prev),
-          prev_cancellation_rate: pct(prev[:cancelled], total_prev),
+          prev_cancellation_rate: pct(prev[:cancelled], total_prev)
         }
       end
 
@@ -94,7 +94,7 @@ module Api
         [
           { stage: "Agendadas",   count: total,     pct: 100.0 },
           { stage: "Confirmadas", count: confirmed, pct: pct(confirmed, total) },
-          { stage: "Completadas", count: completed, pct: pct(completed, total) },
+          { stage: "Completadas", count: completed, pct: pct(completed, total) }
         ]
       end
 
@@ -167,7 +167,7 @@ module Api
               name:            "#{first} #{last}",
               total:           total_i,
               completed:       completed_i,
-              completion_rate: pct(completed_i, total_i),
+              completion_rate: pct(completed_i, total_i)
             }
           end
       end

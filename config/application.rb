@@ -31,6 +31,6 @@ module ClinicaApi
 
     # Configurar Sidekiq como adaptador de Active Job
     config.active_job.queue_adapter = :sidekiq
-    config.time_zone = 'Central America'
+    config.time_zone = "Central America"
   end
 end

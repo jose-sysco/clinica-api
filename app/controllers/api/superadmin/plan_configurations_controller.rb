@@ -43,7 +43,7 @@ module Api
           price_monthly_usd: config.price_monthly_usd.to_f,
           max_doctors:       config.max_doctors,
           max_patients:      config.max_patients,
-          features:          config.features,
+          features:          config.features
         }
       end
     end
