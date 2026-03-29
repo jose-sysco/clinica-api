@@ -1,7 +1,7 @@
 module Api
   module V1
     class OwnersController < BaseController
-      before_action :set_owner, only: [:show, :update, :destroy]
+      before_action :set_owner, only: [ :show, :update, :destroy ]
 
       def index
         authorize Owner, policy_class: OwnerPolicy

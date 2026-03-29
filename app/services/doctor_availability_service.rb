@@ -45,7 +45,7 @@ class DoctorAvailabilityService
     day_end   = Time.zone.parse(@date.to_s).end_of_day
 
     @doctor.appointments
-           .where(status: [:pending, :confirmed, :in_progress, :completed])
+           .where(status: [ :pending, :confirmed, :in_progress, :completed ])
            .where(scheduled_at: day_start..day_end)
            .pluck(:scheduled_at, :ends_at)
   end

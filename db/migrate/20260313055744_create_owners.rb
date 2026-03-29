@@ -15,7 +15,7 @@ class CreateOwners < ActiveRecord::Migration[7.2]
 
     add_index :owners, :organization_id
     add_index :owners, :user_id
-    add_index :owners, [:organization_id, :identification], unique: true
-    add_index :owners, [:organization_id, :email],          unique: true
+    add_index :owners, [ :organization_id, :identification ], unique: true
+    add_index :owners, [ :organization_id, :email ],          unique: true
   end
 end

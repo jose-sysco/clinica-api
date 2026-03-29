@@ -1,9 +1,9 @@
 module Api
   module V1
     class PatientsController < BaseController
-      before_action :set_owner,          only: [:show, :update, :destroy, :create]
-      before_action :set_patient,        only: [:show, :update, :destroy]
-      before_action :check_patient_limit, only: [:create]
+      before_action :set_owner,          only: [ :show, :update, :destroy, :create ]
+      before_action :set_patient,        only: [ :show, :update, :destroy ]
+      before_action :check_patient_limit, only: [ :create ]
 
       def index
         authorize Patient, policy_class: PatientPolicy

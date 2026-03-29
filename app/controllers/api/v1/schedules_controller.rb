@@ -2,7 +2,7 @@ module Api
   module V1
     class SchedulesController < BaseController
       before_action :set_doctor
-      before_action :set_schedule, only: [:update, :destroy]
+      before_action :set_schedule, only: [ :update, :destroy ]
 
       def index
         render json: @doctor.schedules.map { |s| schedule_json(s) }

@@ -2,7 +2,7 @@ module Api
   module V1
     class ScheduleBlocksController < BaseController
       before_action :set_doctor
-      before_action :set_schedule_block, only: [:destroy]
+      before_action :set_schedule_block, only: [ :destroy ]
 
       def index
         blocks = @doctor.schedule_blocks.upcoming.order(:start_datetime)

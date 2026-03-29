@@ -22,7 +22,7 @@ class ApplicationController < ActionController::API
     begin
       decoded = JWT.decode(
         token,
-        ENV['DEVISE_JWT_SECRET_KEY'] || Rails.application.credentials.devise_jwt_secret_key,
+        ENV["DEVISE_JWT_SECRET_KEY"] || Rails.application.credentials.devise_jwt_secret_key,
         true,
         algorithm: "HS256"
       )
@@ -121,7 +121,7 @@ class ApplicationController < ActionController::API
       plan_price_monthly:     config&.price_monthly,
       plan_price_monthly_usd: config&.price_monthly_usd,
       doctors_used:           Doctor.where(organization_id: org.id, status: 0).count,
-      patients_used:          Patient.where(organization_id: org.id, status: 0).count,
+      patients_used:          Patient.where(organization_id: org.id, status: 0).count
     }
   end
 end

@@ -67,7 +67,7 @@ class AppointmentNotificationService
   end
 
   def staff_users
-    User.where(role: [:admin, :receptionist])
+    User.where(role: [ :admin, :receptionist ])
         .where.not(id: @appointment.doctor.user_id)
   end
 

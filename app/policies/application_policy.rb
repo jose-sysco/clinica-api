@@ -14,15 +14,15 @@ class ApplicationPolicy
     admin? || doctor? || receptionist?
   end
 
-  def create? 
+  def create?
     admin? || receptionist?
   end
 
   def update?
     admin? || receptionist?
-  end 
+  end
 
-  def destroy? 
+  def destroy?
     admin?
   end
 
@@ -36,14 +36,14 @@ class ApplicationPolicy
       scope.all
     end
 
-    private 
+    private
 
     attr_reader :user, :scope
   end
 
-  private 
+  private
 
-  def admin? 
+  def admin?
     user.admin?
   end
 
@@ -57,5 +57,5 @@ class ApplicationPolicy
 
   def patient?
     user.patient?
-  end 
+  end
 end

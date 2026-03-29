@@ -1,7 +1,6 @@
 module Api
   module V1
     class WaitlistEntriesController < BaseController
-
       def index
         entries = WaitlistEntry.includes(:patient, :doctor, :owner)
 
@@ -67,16 +66,16 @@ module Api
           doctor: {
             id:         entry.doctor_id,
             full_name:  entry.doctor.full_name,
-            specialty:  entry.doctor.specialty,
+            specialty:  entry.doctor.specialty
           },
           patient: {
             id:   entry.patient_id,
-            name: entry.patient.name,
+            name: entry.patient.name
           },
           owner: {
             id:   entry.owner_id,
-            name: entry.owner.full_name,
-          },
+            name: entry.owner.full_name
+          }
         }
       end
     end

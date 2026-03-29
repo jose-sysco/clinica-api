@@ -12,6 +12,6 @@ class CreateScheduleBlocks < ActiveRecord::Migration[7.2]
 
     add_index :schedule_blocks, :organization_id
     add_index :schedule_blocks, :doctor_id
-    add_index :schedule_blocks, [:doctor_id, :start_datetime, :end_datetime]
+    add_index :schedule_blocks, [ :doctor_id, :start_datetime, :end_datetime ]
   end
 end

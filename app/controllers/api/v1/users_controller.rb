@@ -1,7 +1,6 @@
 module Api
   module V1
     class UsersController < BaseController
-
       def me
         render json: user_json(current_user)
       end
@@ -15,12 +14,12 @@ module Api
 
       def change_password
         unless current_user.valid_password?(params[:current_password])
-          render json: { error: 'Contraseña actual incorrecta' }, status: :unprocessable_entity
+          render json: { error: "Contraseña actual incorrecta" }, status: :unprocessable_entity
           return
         end
 
         if params[:password] != params[:password_confirmation]
-          render json: { error: 'Las contraseñas no coinciden' }, status: :unprocessable_entity
+          render json: { error: "Las contraseñas no coinciden" }, status: :unprocessable_entity
           return
         end
 
@@ -28,7 +27,7 @@ module Api
           password:              params[:password],
           password_confirmation: params[:password_confirmation]
         )
-        render json: { message: 'Contraseña actualizada correctamente' }, status: :ok
+        render json: { message: "Contraseña actualizada correctamente" }, status: :ok
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       end
@@ -64,7 +63,7 @@ module Api
         user = User.find(params[:id])
 
         if params[:password] != params[:password_confirmation]
-          render json: { error: 'Las contraseñas no coinciden' }, status: :unprocessable_entity
+          render json: { error: "Las contraseñas no coinciden" }, status: :unprocessable_entity
           return
         end
 
@@ -72,7 +71,7 @@ module Api
           password:              params[:password],
           password_confirmation: params[:password_confirmation]
         )
-        render json: { message: 'Contraseña actualizada correctamente' }, status: :ok
+        render json: { message: "Contraseña actualizada correctamente" }, status: :ok
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       end
@@ -121,7 +120,7 @@ module Api
             logo_url:             user.organization.logo_file.attached? \
                                     ? rails_blob_url(user.organization.logo_file, host: request.base_url) \
                                     : user.organization.logo,
-            primary_color:        user.organization.primary_color,
+            primary_color:        user.organization.primary_color
           }.merge(plan_config_for(user.organization)),
           created_at: user.created_at
         }

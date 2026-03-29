@@ -31,7 +31,7 @@ class WaitlistEntry < ApplicationRecord
 
   validate :patient_not_already_waiting
 
-  scope :active,      -> { where(status: [:waiting, :notified]) }
+  scope :active,      -> { where(status: [ :waiting, :notified ]) }
   scope :for_doctor,  ->(doctor_id) { where(doctor_id: doctor_id) }
   scope :for_patient, ->(patient_id) { where(patient_id: patient_id) }
   scope :by_date,     ->(date) { where(preferred_date: date) }
@@ -55,7 +55,7 @@ class WaitlistEntry < ApplicationRecord
 
     existing = WaitlistEntry
       .where(organization_id: organization_id, doctor_id: doctor_id, patient_id: patient_id)
-      .where(status: [:waiting, :notified])
+      .where(status: [ :waiting, :notified ])
       .where.not(id: id)
 
     errors.add(:base, "el paciente ya está en lista de espera con este doctor") if existing.exists?

@@ -17,7 +17,7 @@ class WaitlistNotificationJob < ApplicationJob
       entry.notify!
 
       # Crea una notificación in-app para el staff
-      staff_user = appointment.organization.users.where(role: [:admin, :receptionist]).first
+      staff_user = appointment.organization.users.where(role: [ :admin, :receptionist ]).first
       return unless staff_user
 
       Notification.create!(

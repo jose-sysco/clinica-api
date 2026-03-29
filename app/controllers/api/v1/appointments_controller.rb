@@ -1,7 +1,7 @@
 module Api
   module V1
     class AppointmentsController < BaseController
-      before_action :set_appointment, only: [:show, :update, :cancel, :confirm, :complete, :cancel_series, :no_show, :start]
+      before_action :set_appointment, only: [ :show, :update, :cancel, :confirm, :complete, :cancel_series, :no_show, :start ]
 
       def index
         authorize Appointment, policy_class: AppointmentPolicy
@@ -59,14 +59,14 @@ module Api
         authorize @appointment, policy_class: AppointmentPolicy
 
         if @appointment.confirmed?
-          render json: { error: 'La cita ya está confirmada' }, status: :unprocessable_entity
+          render json: { error: "La cita ya está confirmada" }, status: :unprocessable_entity
           return
         end
 
         @appointment.confirmed!
         # El modelo (handle_status_change) ya dispara AppointmentConfirmationJob
         # y programa AppointmentReminderJob — no duplicar aquí.
-        render json: { message: 'Cita confirmada correctamente' }, status: :ok
+        render json: { message: "Cita confirmada correctamente" }, status: :ok
       end
 
       def cancel
@@ -96,7 +96,7 @@ module Api
 
         cancelled_count = 0
         Appointment.where(recurrence_group_id: group_id)
-                   .where.not(status: [:cancelled, :completed])
+                   .where.not(status: [ :cancelled, :completed ])
                    .find_each do |appt|
           appt.update!(
             status:              :cancelled,
@@ -141,7 +141,7 @@ module Api
           return
         end
 
-        unless ["pending", "confirmed", "in_progress"].include?(@appointment.status)
+        unless [ "pending", "confirmed", "in_progress" ].include?(@appointment.status)
           render json: { error: "No se puede registrar como no presentada desde el estado actual" }, status: :unprocessable_entity
           return
         end
@@ -165,10 +165,10 @@ module Api
 
       def create_recurring_series(recurrence_type, sessions)
         interval_days = case recurrence_type
-                        when "weekly"    then 7
-                        when "biweekly"  then 14
-                        when "monthly"   then nil   # use months logic
-                        end
+        when "weekly"    then 7
+        when "biweekly"  then 14
+        when "monthly"   then nil   # use months logic
+        end
 
         group_id   = SecureRandom.uuid
         base_attrs = appointment_params.to_h
@@ -207,7 +207,7 @@ module Api
         }, status: :created
 
       rescue ActiveRecord::RecordInvalid => e
-        render json: { errors: [e.message] }, status: :unprocessable_entity
+        render json: { errors: [ e.message ] }, status: :unprocessable_entity
       end
 
       # ── Helpers ────────────────────────────────────────────────────────────
@@ -245,8 +245,9 @@ module Api
           recurrence_index:    appointment.recurrence_index,
           recurrence_total:    appointment.recurrence_total,
           doctor: {
-            id:        appointment.doctor.id,
-            full_name: appointment.doctor.full_name
+            id:                 appointment.doctor.id,
+            full_name:          appointment.doctor.full_name,
+            inventory_movements: appointment.doctor.inventory_movements
           },
           patient: {
             id:   appointment.patient.id,

@@ -9,7 +9,6 @@ namespace :db do
     #   SUPERADMIN_PASSWORD (requerido en producción)
     desc "Seed datos esenciales de producción (idempotente)"
     task production: :environment do
-
       # ── 1. plan_configurations ───────────────────────────────────────────────
       puts "=> Seeding plan_configurations..."
 
@@ -22,7 +21,7 @@ namespace :db do
           price_monthly_usd: 0,
           max_doctors:       2,
           max_patients:      50,
-          features:          %w[appointments medical_records notifications],
+          features:          %w[appointments medical_records notifications]
         },
         {
           plan:              :basic,
@@ -32,7 +31,7 @@ namespace :db do
           price_monthly_usd: 20.0,
           max_doctors:       3,
           max_patients:      200,
-          features:          %w[appointments medical_records notifications reports],
+          features:          %w[appointments medical_records notifications reports]
         },
         {
           plan:              :professional,
@@ -42,7 +41,7 @@ namespace :db do
           price_monthly_usd: 50.0,
           max_doctors:       10,
           max_patients:      1000,
-          features:          %w[appointments medical_records notifications reports whatsapp_notifications multi_doctor],
+          features:          %w[appointments medical_records notifications reports whatsapp_notifications multi_doctor]
         },
         {
           plan:              :enterprise,
@@ -52,8 +51,8 @@ namespace :db do
           price_monthly_usd: 400.0,
           max_doctors:       nil,
           max_patients:      nil,
-          features:          PlanConfiguration::FEATURES.keys,
-        },
+          features:          PlanConfiguration::FEATURES.keys
+        }
       ]
 
       ActsAsTenant.without_tenant do

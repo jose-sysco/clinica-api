@@ -1,7 +1,7 @@
 module Api
   module V1
     class NotificationsController < BaseController
-      before_action :set_notification, only: [:show, :mark_as_read]
+      before_action :set_notification, only: [ :show, :mark_as_read ]
 
       def index
         notifications = current_user.notifications

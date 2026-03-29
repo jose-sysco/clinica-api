@@ -29,7 +29,7 @@ module Api
           price_monthly_usd: config.price_monthly_usd.to_f,
           max_doctors:       config.max_doctors,
           max_patients:      config.max_patients,
-          features:          config.features || [],
+          features:          config.features || []
         }
       end
 
@@ -38,7 +38,7 @@ module Api
           "trial"        => "Para explorar la plataforma",
           "basic"        => "Ideal para consultorios pequeños",
           "professional" => "Para clínicas en crecimiento",
-          "enterprise"   => "Para redes de clínicas y hospitales",
+          "enterprise"   => "Para redes de clínicas y hospitales"
         }[plan] || ""
       end
     end

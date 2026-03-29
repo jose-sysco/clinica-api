@@ -12,6 +12,6 @@ class CreateWeightRecords < ActiveRecord::Migration[7.2]
 
     add_index :weight_records, :patient_id
     add_index :weight_records, :organization_id
-    add_index :weight_records, [:patient_id, :recorded_on]
+    add_index :weight_records, [ :patient_id, :recorded_on ]
   end
 end

@@ -3,7 +3,7 @@ class HealthController < ActionController::Base
     checks = {
       database: check_database,
       redis:    check_redis,
-      sidekiq:  check_sidekiq,
+      sidekiq:  check_sidekiq
     }
 
     status = checks.values.all? { |c| c[:ok] } ? :ok : :service_unavailable
@@ -13,7 +13,7 @@ class HealthController < ActionController::Base
       version: Rails.version,
       env:     Rails.env,
       checks:  checks,
-      time:    Time.current.iso8601,
+      time:    Time.current.iso8601
     }, status: status
   end
 

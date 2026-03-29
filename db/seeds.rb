@@ -47,7 +47,6 @@ pediatria = Organization.create!(
 puts "🐾 Poblando Veterinaria Patitas..."
 # ─────────────────────────────────────────────────────
 ActsAsTenant.with_tenant(veterinaria) do
-
   User.create!(
     organization: veterinaria, first_name: "Ana", last_name: "García",
     email: "admin@patitas.com", phone: Faker::PhoneNumber.cell_phone,
@@ -85,11 +84,11 @@ ActsAsTenant.with_tenant(veterinaria) do
       specialty:             specialty,
       license_number:        "VET-#{Faker::Number.unique.number(digits: 4)}",
       bio:                   Faker::Lorem.sentence(word_count: 12),
-      consultation_duration: [30, 45].sample,
+      consultation_duration: [ 30, 45 ].sample,
       status:                :active
     )
 
-    [1, 2, 3, 4, 5].each do |day|
+    [ 1, 2, 3, 4, 5 ].each do |day|
       Schedule.create!(
         organization: veterinaria, doctor: doc, day_of_week: day,
         start_time: Time.new(2000, 1, 1, 8, 0, 0),
@@ -102,10 +101,10 @@ ActsAsTenant.with_tenant(veterinaria) do
   end
 
   species_breeds = {
-    "Perro"  => ["Labrador", "Golden Retriever", "Husky", "Rottweiler", "Poodle", "Beagle", "Dálmata", "Bulldog"],
-    "Gato"   => ["Siamés", "Persa", "Maine Coon", "Bengalí", "Angora"],
-    "Pájaro" => ["Loro", "Canario", "Periquito"],
-    "Conejo" => ["Holandés", "Angora", "Rex"],
+    "Perro"  => [ "Labrador", "Golden Retriever", "Husky", "Rottweiler", "Poodle", "Beagle", "Dálmata", "Bulldog" ],
+    "Gato"   => [ "Siamés", "Persa", "Maine Coon", "Bengalí", "Angora" ],
+    "Pájaro" => [ "Loro", "Canario", "Periquito" ],
+    "Conejo" => [ "Holandés", "Angora", "Rex" ]
   }
 
   pet_names = %w[Firulais Mishi Rocky Luna Coco Nala Thor Bella Max Simba Daisy Toby Rex Cleo Lola Bruno Kira Zeus Canela Pepe]
@@ -131,7 +130,7 @@ ActsAsTenant.with_tenant(veterinaria) do
         patient_type: :animal,
         species:      species,
         breed:        species_breeds[species].sample,
-        gender:       [:male, :female].sample,
+        gender:       [ :male, :female ].sample,
         birthdate:    Faker::Date.birthday(min_age: 0, max_age: 12),
         weight:       Faker::Number.decimal(l_digits: 1, r_digits: 1).to_f,
         status:       :active
@@ -160,13 +159,13 @@ ActsAsTenant.with_tenant(veterinaria) do
     rand(10..20).times do
       appt_date = Faker::Date.between(
         from: base_date.beginning_of_month,
-        to:   [base_date.end_of_month.to_date, Date.today].min
+        to:   [ base_date.end_of_month.to_date, Date.today ].min
       )
 
       doctor  = doctors_vet.sample
       patient = all_patients_vet.sample
       status  = statuses_weighted.sample
-      hour    = [8, 9, 10, 11, 14, 15, 16].sample
+      hour    = [ 8, 9, 10, 11, 14, 15, 16 ].sample
 
       appt = Appointment.new(
         organization:     veterinaria,
@@ -187,14 +186,12 @@ ActsAsTenant.with_tenant(veterinaria) do
       )
     end
   end
-
 end
 
 # ─────────────────────────────────────────────────────
 puts "👶 Poblando Pediatría San José..."
 # ─────────────────────────────────────────────────────
 ActsAsTenant.with_tenant(pediatria) do
-
   User.create!(
     organization: pediatria, first_name: "Carlos", last_name: "López",
     email: "admin@sanjose.com", phone: Faker::PhoneNumber.cell_phone,
@@ -231,11 +228,11 @@ ActsAsTenant.with_tenant(pediatria) do
       specialty:             specialty,
       license_number:        "PED-#{Faker::Number.unique.number(digits: 4)}",
       bio:                   Faker::Lorem.sentence(word_count: 12),
-      consultation_duration: [30, 45].sample,
+      consultation_duration: [ 30, 45 ].sample,
       status:                :active
     )
 
-    [1, 2, 3, 4, 5, 6].each do |day|
+    [ 1, 2, 3, 4, 5, 6 ].each do |day|
       Schedule.create!(
         organization: pediatria, doctor: doc, day_of_week: day,
         start_time: Time.new(2000, 1, 1, 9, 0, 0),
@@ -265,7 +262,7 @@ ActsAsTenant.with_tenant(pediatria) do
         owner:        owner,
         name:         "#{Faker::Name.first_name} #{owner.last_name}",
         patient_type: :human,
-        gender:       [:male, :female].sample,
+        gender:       [ :male, :female ].sample,
         birthdate:    Faker::Date.birthday(min_age: 0, max_age: 15),
         status:       :active
       )
@@ -293,13 +290,13 @@ ActsAsTenant.with_tenant(pediatria) do
     rand(8..15).times do
       appt_date = Faker::Date.between(
         from: base_date.beginning_of_month,
-        to:   [base_date.end_of_month.to_date, Date.today].min
+        to:   [ base_date.end_of_month.to_date, Date.today ].min
       )
 
       doctor  = doctors_ped.sample
       patient = all_patients_ped.sample
       status  = statuses_weighted.sample
-      hour    = [9, 10, 11, 14, 15, 16, 17].sample
+      hour    = [ 9, 10, 11, 14, 15, 16, 17 ].sample
 
       appt = Appointment.new(
         organization:     pediatria,
@@ -320,7 +317,6 @@ ActsAsTenant.with_tenant(pediatria) do
       )
     end
   end
-
 end
 
 puts ""

@@ -13,6 +13,6 @@ class CreateSchedules < ActiveRecord::Migration[7.2]
 
     add_index :schedules, :organization_id
     add_index :schedules, :doctor_id
-    add_index :schedules, [:doctor_id, :day_of_week], unique: true
+    add_index :schedules, [ :doctor_id, :day_of_week ], unique: true
   end
 end

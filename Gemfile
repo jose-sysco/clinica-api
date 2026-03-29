@@ -39,46 +39,51 @@ group :development, :test do
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
 
-  gem 'rspec-rails'
-  gem 'factory_bot_rails'
-  gem 'faker'
-  gem 'rswag-specs'
-  gem 'dotenv-rails'
-  gem 'annotate'
+  gem "rspec-rails"
+  gem "factory_bot_rails"
+  gem "faker"
+  gem "rswag-specs"
+  gem "dotenv-rails"
+  gem "annotate"
+end
+
+group :test do
+  gem "shoulda-matchers", "~> 6.0"
+  gem "simplecov", require: false
 end
 
 
 # Auth
-gem 'devise'
-gem 'devise-jwt'
-gem 'jwt'
+gem "devise"
+gem "devise-jwt"
+gem "jwt"
 
 # Multitenant
-gem 'acts_as_tenant'
+gem "acts_as_tenant"
 
 # Autorizacion
-gem 'pundit'
+gem "pundit"
 
 # Background jobs
-gem 'sidekiq'
-gem 'redis'
+gem "sidekiq"
+gem "redis"
 
 # Paginacion
-gem 'pagy', '~> 9.0'
+gem "pagy", "~> 9.0"
 
 # CORS
-gem 'rack-cors'
+gem "rack-cors"
 
 # Rate limiting
-gem 'rack-attack'
+gem "rack-attack"
 
 # Serializers
-gem 'jsonapi-serializer'
+gem "jsonapi-serializer"
 
 # Documentacion de API
-gem 'rswag-api'
-gem 'rswag-ui'
+gem "rswag-api"
+gem "rswag-ui"
 
 group :development do
-  gem 'letter_opener'
+  gem "letter_opener"
 end

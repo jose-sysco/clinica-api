@@ -36,7 +36,7 @@ module Api
         appointments = Appointment.includes(:patient, :doctor)
                                   .joins(:patient)
                                   .where("LOWER(patients.name) LIKE ?", like)
-                                  .where.not(status: [:cancelled, :no_show])
+                                  .where.not(status: [ :cancelled, :no_show ])
                                   .order(scheduled_at: :desc)
                                   .limit(4)
                                   .map { |a|
@@ -51,7 +51,26 @@ module Api
                                     }
                                   }
 
-        render json: { patients: patients, doctors: doctors, appointments: appointments }
+        products = if ActsAsTenant.current_tenant.enabled_features.include?("inventory")
+                     Product.active
+                            .where("LOWER(name) LIKE ? OR LOWER(category) LIKE ? OR LOWER(sku) LIKE ?", like, like, like)
+                            .limit(4)
+                            .map { |p|
+                              {
+                                id:            p.id,
+                                name:          p.name,
+                                category:      p.category,
+                                current_stock: p.current_stock.to_f,
+                                unit:          p.unit,
+                                low_stock:     p.low_stock?,
+                                type:          "product"
+                              }
+                            }
+        else
+                     []
+        end
+
+        render json: { patients: patients, doctors: doctors, appointments: appointments, products: products }
       end
     end
   end

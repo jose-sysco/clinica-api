@@ -18,6 +18,6 @@ class CreatePatients < ActiveRecord::Migration[7.2]
 
     add_index :patients, :organization_id
     add_index :patients, :owner_id
-    add_index :patients, [:organization_id, :status]
+    add_index :patients, [ :organization_id, :status ]
   end
 end

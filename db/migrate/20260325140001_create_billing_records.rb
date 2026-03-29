@@ -12,7 +12,7 @@ class CreateBillingRecords < ActiveRecord::Migration[7.2]
       t.timestamps
     end
 
-    add_index :billing_records, [:organization_id, :period], unique: true
+    add_index :billing_records, [ :organization_id, :period ], unique: true
     add_foreign_key :billing_records, :users, column: :recorded_by_id
   end
 end

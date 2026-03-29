@@ -14,4 +14,8 @@ class UserPolicy < ApplicationPolicy
   def admin_change_password?
     admin?
   end
+
+  def create_staff?
+    admin?
+  end
 end

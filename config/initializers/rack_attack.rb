@@ -84,7 +84,7 @@ Rack::Attack.throttled_responder = lambda do |env|
     "Retry-After"           => retry_after.to_s,
     "X-RateLimit-Limit"     => match_data[:limit].to_s,
     "X-RateLimit-Remaining" => "0",
-    "X-RateLimit-Reset"     => (now + retry_after).to_s,
+    "X-RateLimit-Reset"     => (now + retry_after).to_s
   }
 
   body = {
@@ -93,7 +93,7 @@ Rack::Attack.throttled_responder = lambda do |env|
     retry_after: retry_after
   }.to_json
 
-  [429, headers, [body]]
+  [ 429, headers, [ body ] ]
 end
 
 # ── Blocklist responder (mismo formato) ───────────────────────────────────────
@@ -105,7 +105,7 @@ Rack::Attack.blocklisted_responder = lambda do |env|
     code:  "ip_blocked"
   }.to_json
 
-  [403, headers, [body]]
+  [ 403, headers, [ body ] ]
 end
 
 # ── Logging (solo en production) ─────────────────────────────────────────────
