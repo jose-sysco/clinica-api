@@ -47,6 +47,11 @@ group :development, :test do
   gem "annotate"
 end
 
+group :test do
+  gem "shoulda-matchers", "~> 6.0"
+  gem "simplecov", require: false
+end
+
 
 # Auth
 gem "devise"

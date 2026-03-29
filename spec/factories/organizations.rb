@@ -1,36 +1,39 @@
-# == Schema Information
-#
-# Table name: organizations
-#
-#  id          :bigint           not null, primary key
-#  name        :string           not null
-#  slug        :string           not null
-#  subdomain   :string           not null
-#  email       :string           not null
-#  phone       :string
-#  address     :string
-#  city        :string
-#  country     :string
-#  timezone    :string           default("UTC"), not null
-#  logo        :string
-#  clinic_type :integer          default("veterinary"), not null
-#  status      :integer          default("active"), not null
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#
 FactoryBot.define do
   factory :organization do
-    name { "MyString" }
-    slug { "MyString" }
-    subdomain { "MyString" }
-    email { "MyString" }
-    phone { "MyString" }
-    address { "MyString" }
-    city { "MyString" }
-    country { "MyString" }
-    timezone { "MyString" }
-    logo { "MyString" }
-    clinic_type { 1 }
-    status { 1 }
+    sequence(:name) { |n| "#{Faker::Company.name} #{n}" }
+    email      { Faker::Internet.unique.email }
+    phone      { Faker::PhoneNumber.phone_number }
+    city       { "Guatemala" }
+    country    { "Guatemala" }
+    timezone   { "America/Guatemala" }
+    clinic_type { :veterinary }
+    status     { :active }
+    # slug & subdomain are auto-generated from name via before_validation callbacks
+    # plan is set to :trial by before_create callback
+
+    trait :general do
+      clinic_type { :general }
+    end
+
+    # Use update_columns to bypass the before_create callback that forces :trial
+    trait :basic do
+      after(:create) { |org| org.update_columns(plan: 1) }
+    end
+
+    trait :professional do
+      after(:create) { |org| org.update_columns(plan: 2) }
+    end
+
+    trait :enterprise do
+      after(:create) { |org| org.update_columns(plan: 3) }
+    end
+
+    trait :trial_expired do
+      after(:create) { |org| org.update_columns(trial_ends_at: 2.days.ago) }
+    end
+
+    trait :suspended do
+      after(:create) { |org| org.update_columns(status: 2, suspended_at: Time.current) }
+    end
   end
 end

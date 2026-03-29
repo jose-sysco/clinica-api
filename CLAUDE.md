@@ -14,9 +14,11 @@ rails db:create db:migrate db:seed
 rails db:reset               # Full reset with seed data
 
 # Testing
-bin/rspec                    # Run all tests
-bin/rspec spec/models/user_spec.rb              # Single test file
-bin/rspec spec/integration/appointments_spec.rb # Integration tests
+bundle exec rspec                              # Run all tests
+bundle exec rspec spec/models/                 # Model specs only
+bundle exec rspec spec/requests/               # Request (behavioral) specs only
+bundle exec rspec spec/models/product_spec.rb  # Single file
+bundle exec rspec --tag ~pending               # Skip pending specs
 
 # Linting & Security
 bin/rubocop -f github        # Lint (style)
@@ -203,6 +205,28 @@ Swagger UI available at `/api-docs` (rswag). Spec files in `swagger/`.
 
 ## Testing
 
-- RSpec with FactoryBot (`spec/factories/`)
-- Integration tests in `spec/integration/`
+Stack: RSpec + FactoryBot + Faker + Shoulda Matchers + SimpleCov
+
+| Carpeta | Tipo |
+|---------|------|
+| `spec/models/` | Model specs (validaciones, asociaciones, enums, lógica de negocio) |
+| `spec/requests/` | Request specs (endpoints reales, auth, RBAC, paginación) |
+| `spec/integration/` | Swagger specs (rswag — generan documentación API) |
+| `spec/factories/` | Factories con Faker + traits por plan/estado |
+| `spec/support/` | Helpers: `auth_helpers.rb` (`sign_in_as`, `auth_headers`), FactoryBot, Shoulda Matchers |
+
+**Patrón para request specs:**
+```ruby
+let!(:org)   { create(:organization, :basic) }
+let!(:admin) { create(:user, organization: org) }
+before { @token = sign_in_as(admin, org) }
+# luego usar auth_headers(@token, org) en cada request
+```
+
+**Patrón para model specs con tenant:**
+```ruby
+before { ActsAsTenant.current_tenant = org }
+after  { ActsAsTenant.current_tenant = nil }
+```
+
 - CI runs: Brakeman → Rubocop → RSpec (GitHub Actions at `.github/workflows/ci.yml`)
