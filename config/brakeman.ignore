@@ -1,0 +1,12 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "64325b12e0ef5ebc435a87c93ba29e8cdeb06f38842b44b8d0e829f1e6cc1625",
+      "note": "False positive: create_staff is gated by authorize User :create_staff? which restricts to admin role only"
+    },
+    {
+      "fingerprint": "7472febe365c896120959954fecf79a1d698202a7dcc5ceb208c48a046ed8fbc",
+      "note": "False positive: admin_user_params is used in #update which calls authorize User (update? -> admin? only)"
+    }
+  ]
+}

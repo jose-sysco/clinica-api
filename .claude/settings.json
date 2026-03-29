@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bin/rubocop -f github --no-color $(git diff --name-only HEAD -- '*.rb' 2>/dev/null | tr '\\n' ' ') 2>/dev/null || true",
+            "statusMessage": "RuboCop: verificando archivo modificado..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/alejandrochinchilla/Documents/PROYECTOS/RAILS/clinica_api && bin/rubocop -f github 2>/dev/null || true",
+            "statusMessage": "RuboCop: validación final del proyecto..."
+          }
+        ]
+      }
+    ]
+  }
+}

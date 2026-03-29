@@ -28,6 +28,7 @@ module Api
         end
 
         def create_staff
+          authorize User, :create_staff?
           ActiveRecord::Base.transaction do
             @user = User.new(staff_params)
             @user.organization = ActsAsTenant.current_tenant
