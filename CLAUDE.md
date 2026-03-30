@@ -67,7 +67,6 @@ Plans: `trial` → `basic` → `professional` → `enterprise`. Features control
 |---------|:-----:|:-----:|:------------:|:----------:|
 | reports | ❌ | ✅ | ✅ | ✅ |
 | multi_doctor | ❌ | ❌ | ✅ | ✅ |
-| whatsapp_notifications | ❌ | ❌ | ✅ | ✅ |
 | inventory | ❌ | ❌ | ❌ | ✅ |
 | custom_branding | ❌ | ❌ | ❌ | ✅ |
 
