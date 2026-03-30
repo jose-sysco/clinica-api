@@ -4,7 +4,6 @@ class PlanConfiguration < ApplicationRecord
     "medical_records"        => { label: "Expedientes médicos",         category: "core" },
     "notifications"          => { label: "Notificaciones internas",     category: "core" },
     "reports"                => { label: "Reportes y estadísticas",     category: "core" },
-    "whatsapp_notifications" => { label: "Notificaciones por WhatsApp", category: "communication" },
     "multi_doctor"           => { label: "Múltiples doctores",          category: "team" },
     "inventory"              => { label: "Inventario de medicinas",     category: "advanced" },
     "custom_branding"        => { label: "Marca personalizada",         category: "advanced" }
@@ -13,7 +12,7 @@ class PlanConfiguration < ApplicationRecord
   PLAN_DEFAULTS = {
     "trial"        => %w[appointments medical_records notifications],
     "basic"        => %w[appointments medical_records notifications reports],
-    "professional" => %w[appointments medical_records notifications reports whatsapp_notifications multi_doctor],
+    "professional" => %w[appointments medical_records notifications reports multi_doctor],
     "enterprise"   => FEATURES.keys
   }.freeze
 
