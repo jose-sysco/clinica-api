@@ -12,13 +12,15 @@ module Api
 
             @user = User.new(user_params)
             @user.organization = @organization
-            @user.role = :admin
+            @user.role   = :admin
             @user.status = :active
             @user.save!
           end
 
+          EmailVerificationJob.perform_later(@user.id)
+
           render json: {
-            message: "Registro exitoso",
+            message: "Registro exitoso. Revisa tu correo para verificar tu cuenta antes de iniciar sesión.",
             organization: organization_json(@organization),
             user: user_json(@user)
           }, status: :created
@@ -31,8 +33,9 @@ module Api
           authorize User, :create_staff?
           ActiveRecord::Base.transaction do
             @user = User.new(staff_params)
-            @user.organization = ActsAsTenant.current_tenant
-            @user.status = :active
+            @user.organization     = ActsAsTenant.current_tenant
+            @user.status           = :active
+            @user.email_verified_at = Time.current  # staff creado por admin: pre-verificado
             @user.save!
 
             # Solo crea el Doctor stub cuando se usa este endpoint directamente

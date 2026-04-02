@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 40px 20px;">
+
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+    <!-- Header -->
+    <div style="background: #4f46e5; padding: 32px 40px;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600;">
+        <%= @organization.name %>
+      </h1>
+      <p style="color: #c7d2fe; margin: 8px 0 0 0; font-size: 14px;">
+        ✉️ Verifica tu cuenta
+      </p>
+    </div>
+
+    <!-- Contenido -->
+    <div style="padding: 40px;">
+      <h2 style="color: #0f172a; margin-top: 0; font-size: 22px;">
+        ¡Bienvenido a <%= @organization.name %>!
+      </h2>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+        Hola <strong style="color: #0f172a;"><%= @user.full_name %></strong>,
+      </p>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+        Gracias por registrarte. Para activar tu cuenta y comenzar a usar el sistema, necesitas verificar tu dirección de correo electrónico.
+      </p>
+
+      <!-- Card detalles -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
+        <p style="margin: 0 0 12px 0; font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+          Datos de tu cuenta
+        </p>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Nombre:</strong> <%= @user.full_name %>
+        </p>
+        <p style="margin: 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Correo:</strong> <%= @user.email %>
+        </p>
+      </div>
+
+      <!-- Botón CTA -->
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="<%= @verification_url %>"
+           style="display: inline-block; background: #4f46e5; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-size: 15px; font-weight: 600; letter-spacing: 0.01em;">
+          Verificar mi cuenta
+        </a>
+      </div>
+
+      <!-- Nota de expiración -->
+      <div style="background: #fefce8; border: 1px solid #fde68a; border-radius: 8px; padding: 16px; margin-top: 24px;">
+        <p style="margin: 0; font-size: 13px; color: #92400e;">
+          ⚠️ Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:<br>
+          <span style="color: #4f46e5; word-break: break-all;"><%= @verification_url %></span>
+        </p>
+      </div>
+
+      <p style="color: #94a3b8; font-size: 13px; margin-top: 24px; line-height: 1.5;">
+        Si no creaste esta cuenta, puedes ignorar este correo.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 40px;">
+      <p style="margin: 0; font-size: 13px; color: #94a3b8; text-align: center;">
+        Este email fue enviado por <strong style="color: #64748b;"><%= @organization.name %></strong>
+      </p>
+    </div>
+
+  </div>
+
+</body>
+</html>

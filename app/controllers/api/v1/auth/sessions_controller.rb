@@ -22,6 +22,14 @@ module Api
             return
           end
 
+          unless user.email_verified?
+            render json: {
+              error: "Debes verificar tu correo antes de iniciar sesión. Revisa tu bandeja de entrada.",
+              code:  "email_not_verified"
+            }, status: :forbidden
+            return
+          end
+
           unless user.superadmin?
             if organization.suspended?
               render json: {

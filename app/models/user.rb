@@ -43,12 +43,19 @@ class User < ApplicationRecord
   validates :role,       presence: true
   validates :status,     presence: true
 
+  # Callbacks
+  before_create :generate_email_verification_token
+
   # Scopes
   scope :active_users, -> { where(status: :active) }
   scope :doctors,      -> { where(role: :doctor) }
   scope :patients,     -> { where(role: :patient) }
 
   # Helpers
+  def email_verified?
+    email_verified_at.present?
+  end
+
   def full_name
     "#{first_name} #{last_name}"
   end
@@ -75,5 +82,12 @@ class User < ApplicationRecord
 
   def active_user?
     status == "active"
+  end
+
+  private
+
+  def generate_email_verification_token
+    return if email_verified_at.present?
+    self.email_verification_token = SecureRandom.urlsafe_base64(32)
   end
 end
