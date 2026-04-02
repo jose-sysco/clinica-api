@@ -74,8 +74,12 @@ Rails.application.configure do
   config.action_mailer.raise_delivery_errors = true
   config.action_mailer.default_url_options = { host: ENV.fetch("API_HOST", "api.clinicaportal.com"), protocol: "https" }
 
-  # SMTP via env vars (compatible con Resend, SendGrid, Mailgun, Amazon SES, etc.)
-  if ENV["SMTP_HOST"].present?
+  # Email delivery: Resend HTTP API (recomendado) o SMTP como fallback
+  if ENV["RESEND_API_KEY"].present?
+    require "resend/mailer"
+    config.action_mailer.delivery_method    = :resend
+    config.action_mailer.perform_deliveries = true
+  elsif ENV["SMTP_HOST"].present?
     config.action_mailer.delivery_method   = :smtp
     config.action_mailer.perform_deliveries = true
     config.action_mailer.smtp_settings = {
@@ -87,8 +91,7 @@ Rails.application.configure do
       enable_starttls_auto: true
     }
   else
-    # Sin SMTP configurado: log en consola para no perder errores silenciosos
-    config.action_mailer.delivery_method   = :logger
+    config.action_mailer.delivery_method    = :logger
     config.action_mailer.perform_deliveries = false
   end
 

@@ -68,6 +68,9 @@ gem "pundit"
 gem "sidekiq"
 gem "redis"
 
+# Email via Resend HTTP API
+gem "resend"
+
 # Paginacion
 gem "pagy", "~> 9.0"
 
