@@ -5,7 +5,7 @@ class PlanConfiguration < ApplicationRecord
     "notifications"          => { label: "Notificaciones internas",     category: "core" },
     "reports"                => { label: "Reportes y estadísticas",     category: "core" },
     "multi_doctor"           => { label: "Múltiples doctores",          category: "team" },
-    "inventory"              => { label: "Inventario de medicinas",     category: "advanced" },
+    "inventory"              => { label: "Inventario de productos",     category: "advanced" },
     "custom_branding"        => { label: "Marca personalizada",         category: "advanced" }
   }.freeze
 
