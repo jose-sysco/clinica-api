@@ -50,7 +50,7 @@ Rails.application.routes.draw do
         resources :patients, only: [ :index, :show, :create, :update, :destroy ]
       end
 
-      resources :patients, only: [ :index, :show, :update ] do
+      resources :patients, only: [ :index, :show, :create, :update ] do
         resources :weight_records, only: [ :index, :create, :destroy ]
         get :medical_records, to: "medical_records#patient_records"
       end

@@ -13,9 +13,10 @@ module Api
           superadmin_org = Organization.find_by!(slug: "clinicaportal-admin")
 
           user = User.new(user_params)
-          user.organization = superadmin_org
-          user.role   = :superadmin
-          user.status = :active
+          user.organization    = superadmin_org
+          user.role            = :superadmin
+          user.status          = :active
+          user.email_verified_at = Time.current  # creado por superadmin: pre-verificado
           user.save!
 
           render json: user_json(user), status: :created

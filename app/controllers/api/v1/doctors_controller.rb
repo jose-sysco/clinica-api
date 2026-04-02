@@ -36,9 +36,10 @@ module Api
         ActiveRecord::Base.transaction do
           # Crear usuario con rol doctor
           user = User.new(user_params_for_doctor)
-          user.organization = ActsAsTenant.current_tenant
-          user.role         = :doctor
-          user.status       = :active
+          user.organization    = ActsAsTenant.current_tenant
+          user.role            = :doctor
+          user.status          = :active
+          user.email_verified_at = Time.current  # creado por admin: pre-verificado
           user.save!
 
           # Crear doctor asociado al usuario

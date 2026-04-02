@@ -2,6 +2,7 @@ module Api
   module V1
     class PatientsController < BaseController
       before_action :set_owner,          only: [ :show, :update, :destroy, :create ]
+      # set_owner is a no-op when owner_id param is absent (standalone patient creation)
       before_action :set_patient,        only: [ :show, :update, :destroy ]
       before_action :check_patient_limit, only: [ :create ]
 
@@ -30,9 +31,17 @@ module Api
       end
 
       def create
-        patient = @owner.patients.new(patient_params)
+        patient = if @owner
+          @owner.patients.new(patient_params)
+        else
+          p = Patient.new(patient_params)
+          p.organization = ActsAsTenant.current_tenant
+          p
+        end
         patient.save!
         render json: patient_json(patient), status: :created
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       end
 
       def update
@@ -94,11 +103,11 @@ module Api
           chronic_conditions:   patient.chronic_conditions,
           microchip_number:     patient.microchip_number,
           reproductive_status:  patient.reproductive_status,
-          owner: {
+          owner: patient.owner ? {
             id:        patient.owner.id,
             full_name: patient.owner.full_name,
             phone:     patient.owner.phone
-          }
+          } : nil
         }
       end
     end

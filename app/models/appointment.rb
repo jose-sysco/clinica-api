@@ -27,7 +27,7 @@ class Appointment < ApplicationRecord
   belongs_to :organization
   belongs_to :doctor
   belongs_to :patient
-  belongs_to :owner
+  belongs_to :owner, optional: true
 
   has_one :medical_record
 
