@@ -95,8 +95,8 @@ end
 
 # ── Respuesta personalizada para throttled requests ───────────────────────────
 
-Rack::Attack.throttled_responder = lambda do |env|
-  match_data = env["rack.attack.match_data"]
+Rack::Attack.throttled_responder = lambda do |req|
+  match_data = req.env["rack.attack.match_data"]
   now        = match_data[:epoch_time]
   period     = match_data[:period]
 
@@ -121,7 +121,7 @@ end
 
 # ── Blocklist responder (mismo formato) ───────────────────────────────────────
 
-Rack::Attack.blocklisted_responder = lambda do |env|
+Rack::Attack.blocklisted_responder = lambda do |req|
   headers = { "Content-Type" => "application/json" }
   body    = {
     error: "Acceso temporalmente bloqueado por actividad sospechosa.",
