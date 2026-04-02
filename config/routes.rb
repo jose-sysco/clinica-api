@@ -25,8 +25,10 @@ Rails.application.routes.draw do
       delete "auth/sign_out",      to: "auth/sessions#destroy"
       post   "auth/refresh",       to: "auth/sessions#refresh"
       post   "auth/sign_up_staff", to: "auth/registrations#create_staff"
-      post   "auth/forgot_password", to: "auth/passwords#forgot"
-      post   "auth/reset_password",  to: "auth/passwords#reset"
+      post   "auth/forgot_password",    to: "auth/passwords#forgot"
+      post   "auth/reset_password",     to: "auth/passwords#reset"
+      post   "auth/verify_email",       to: "auth/email_verifications#verify"
+      post   "auth/resend_verification", to: "auth/email_verifications#resend"
 
       # Organizations
       resource :organization, only: [ :show, :update ] do

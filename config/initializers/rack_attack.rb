@@ -50,6 +50,29 @@ Rack::Attack.throttle("auth/forgot_password/email", limit: 3, period: 1.hour) do
   end
 end
 
+# Registro: 5 cuentas por IP por hora (evita creación masiva de cuentas)
+Rack::Attack.throttle("auth/sign_up/ip", limit: 5, period: 1.hour) do |req|
+  req.ip if req.path == "/api/v1/auth/sign_up" && req.post?
+end
+
+# Verificación de email: 10 intentos por IP por hora
+Rack::Attack.throttle("auth/verify_email/ip", limit: 10, period: 1.hour) do |req|
+  req.ip if req.path == "/api/v1/auth/verify_email" && req.post?
+end
+
+# Reenvío de verificación: 5 por IP por hora, 3 por email por hora
+Rack::Attack.throttle("auth/resend_verification/ip", limit: 5, period: 1.hour) do |req|
+  req.ip if req.path == "/api/v1/auth/resend_verification" && req.post?
+end
+
+Rack::Attack.throttle("auth/resend_verification/email", limit: 3, period: 1.hour) do |req|
+  if req.path == "/api/v1/auth/resend_verification" && req.post?
+    body = JSON.parse(req.body.read) rescue {}
+    req.body.rewind
+    body["email"].to_s.downcase.strip.presence
+  end
+end
+
 # ── 2. Throttle general de API ────────────────────────────────────────────────
 
 # 300 requests por IP cada 5 minutos — protege contra scraping y DDoS ligero
