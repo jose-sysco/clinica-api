@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_02_000002) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_02_000005) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -46,7 +46,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_02_000002) do
     t.integer "organization_id", null: false
     t.integer "doctor_id", null: false
     t.integer "patient_id", null: false
-    t.integer "owner_id", null: false
+    t.integer "owner_id"
     t.datetime "scheduled_at", null: false
     t.datetime "ends_at", null: false
     t.integer "status", default: 0, null: false
@@ -131,6 +131,30 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_02_000002) do
     t.integer "blood_pressure_systolic"
     t.integer "blood_pressure_diastolic"
     t.decimal "oxygen_saturation", precision: 4, scale: 1
+    t.integer "pain_scale"
+    t.string "affected_area"
+    t.text "range_of_motion"
+    t.text "functional_assessment"
+    t.text "treatment_performed"
+    t.text "rehabilitation_plan"
+    t.text "evolution_notes"
+    t.string "dental_procedure"
+    t.string "dental_affected_teeth"
+    t.string "dental_anesthesia"
+    t.integer "session_number"
+    t.integer "mood_scale"
+    t.string "psychotherapy_technique"
+    t.text "session_objectives"
+    t.text "session_development"
+    t.text "session_agreements"
+    t.decimal "goal_weight", precision: 5, scale: 2
+    t.text "dietary_assessment"
+    t.text "dietary_plan"
+    t.text "food_restrictions"
+    t.string "physical_activity_level"
+    t.string "coat_condition"
+    t.text "vaccination_notes"
+    t.text "deworming_notes"
     t.index ["appointment_id"], name: "index_medical_records_on_appointment_id", unique: true
     t.index ["doctor_id"], name: "index_medical_records_on_doctor_id"
     t.index ["organization_id"], name: "index_medical_records_on_organization_id"
@@ -199,7 +223,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_02_000002) do
 
   create_table "patients", force: :cascade do |t|
     t.integer "organization_id", null: false
-    t.integer "owner_id", null: false
+    t.integer "owner_id"
     t.string "name", null: false
     t.integer "patient_type", default: 0, null: false
     t.string "species"
@@ -342,7 +366,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_02_000002) do
     t.integer "organization_id", null: false
     t.integer "doctor_id", null: false
     t.integer "patient_id", null: false
-    t.integer "owner_id", null: false
+    t.integer "owner_id"
     t.date "preferred_date"
     t.text "notes"
     t.integer "status", default: 0, null: false

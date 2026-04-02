@@ -20,7 +20,7 @@ module Api
 
       def create
         entry = WaitlistEntry.new(entry_params)
-        entry.organization = current_organization
+        entry.organization = ActsAsTenant.current_tenant
 
         if entry.save
           render json: serialize(entry), status: :created

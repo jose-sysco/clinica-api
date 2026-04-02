@@ -27,22 +27,18 @@ class MedicalRecord < ApplicationRecord
   belongs_to :doctor
 
   validates :appointment_id, uniqueness: true
-  validate  :requires_assessment
 
+  # Vitales — todos opcionales, solo validación numérica si se proporcionan
   validates :weight,                   numericality: { greater_than: 0 },                             allow_blank: true
   validates :height,                   numericality: { greater_than: 0 },                             allow_blank: true
+  validates :goal_weight,              numericality: { greater_than: 0 },                             allow_blank: true
   validates :temperature,              numericality: { greater_than: 0 },                             allow_blank: true
   validates :heart_rate,               numericality: { only_integer: true, greater_than: 0 },         allow_blank: true
   validates :respiratory_rate,         numericality: { only_integer: true, greater_than: 0 },         allow_blank: true
   validates :blood_pressure_systolic,  numericality: { only_integer: true, greater_than: 0 },         allow_blank: true
   validates :blood_pressure_diastolic, numericality: { only_integer: true, greater_than: 0 },         allow_blank: true
   validates :oxygen_saturation,        numericality: { greater_than: 0, less_than_or_equal_to: 100 }, allow_blank: true
-
-  private
-
-  def requires_assessment
-    if soap_assessment.blank? && diagnosis.blank?
-      errors.add(:base, "Se requiere un diagnóstico o evaluación (campo A del SOAP)")
-    end
-  end
+  validates :pain_scale,               numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 10 }, allow_blank: true
+  validates :mood_scale,               numericality: { only_integer: true, greater_than_or_equal_to: 1, less_than_or_equal_to: 10 }, allow_blank: true
+  validates :session_number,           numericality: { only_integer: true, greater_than: 0 },         allow_blank: true
 end

@@ -86,13 +86,30 @@ module Api
       def medical_record_params
         params.require(:medical_record).permit(
           :appointment_id,
+          # Vitales generales
           :weight, :height, :temperature,
           :heart_rate, :respiratory_rate,
           :blood_pressure_systolic, :blood_pressure_diastolic,
           :oxygen_saturation,
+          # SOAP
           :soap_subjective, :soap_objective, :soap_assessment, :soap_plan,
+          # Campos legacy / generales
           :diagnosis, :treatment, :medications, :notes,
-          :next_visit_date
+          :next_visit_date,
+          # Fisioterapia
+          :pain_scale, :affected_area, :range_of_motion,
+          :functional_assessment, :treatment_performed,
+          :rehabilitation_plan, :evolution_notes,
+          # Odontología
+          :dental_procedure, :dental_affected_teeth, :dental_anesthesia,
+          # Psicología
+          :session_number, :mood_scale, :psychotherapy_technique,
+          :session_objectives, :session_development, :session_agreements,
+          # Nutrición
+          :goal_weight, :dietary_assessment, :dietary_plan,
+          :food_restrictions, :physical_activity_level,
+          # Veterinaria
+          :coat_condition, :vaccination_notes, :deworming_notes
         )
       end
 
@@ -107,7 +124,7 @@ module Api
             id:        record.doctor.id,
             full_name: record.doctor.full_name
           },
-          # Signos vitales
+          # Vitales generales
           weight:                   record.weight,
           height:                   record.height,
           temperature:              record.temperature,
@@ -121,13 +138,42 @@ module Api
           soap_objective:  record.soap_objective,
           soap_assessment: record.soap_assessment,
           soap_plan:       record.soap_plan,
-          # Campos legacy
+          # Generales / legacy
           diagnosis:       record.diagnosis,
           treatment:       record.treatment,
           medications:     record.medications,
           notes:           record.notes,
           next_visit_date: record.next_visit_date,
-          created_at:      record.created_at.in_time_zone(tz).strftime("%Y-%m-%dT%H:%M:%S")
+          # Fisioterapia
+          pain_scale:              record.pain_scale,
+          affected_area:           record.affected_area,
+          range_of_motion:         record.range_of_motion,
+          functional_assessment:   record.functional_assessment,
+          treatment_performed:     record.treatment_performed,
+          rehabilitation_plan:     record.rehabilitation_plan,
+          evolution_notes:         record.evolution_notes,
+          # Odontología
+          dental_procedure:        record.dental_procedure,
+          dental_affected_teeth:   record.dental_affected_teeth,
+          dental_anesthesia:       record.dental_anesthesia,
+          # Psicología
+          session_number:          record.session_number,
+          mood_scale:              record.mood_scale,
+          psychotherapy_technique: record.psychotherapy_technique,
+          session_objectives:      record.session_objectives,
+          session_development:     record.session_development,
+          session_agreements:      record.session_agreements,
+          # Nutrición
+          goal_weight:             record.goal_weight,
+          dietary_assessment:      record.dietary_assessment,
+          dietary_plan:            record.dietary_plan,
+          food_restrictions:       record.food_restrictions,
+          physical_activity_level: record.physical_activity_level,
+          # Veterinaria
+          coat_condition:          record.coat_condition,
+          vaccination_notes:       record.vaccination_notes,
+          deworming_notes:         record.deworming_notes,
+          created_at:              record.created_at.in_time_zone(tz).strftime("%Y-%m-%dT%H:%M:%S")
         }
       end
     end

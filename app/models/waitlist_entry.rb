@@ -20,13 +20,12 @@ class WaitlistEntry < ApplicationRecord
   belongs_to :organization
   belongs_to :doctor
   belongs_to :patient
-  belongs_to :owner
+  belongs_to :owner, optional: true
 
   enum :status, { waiting: 0, notified: 1, booked: 2, expired: 3 }
 
   validates :doctor_id,  presence: true
   validates :patient_id, presence: true
-  validates :owner_id,   presence: true
   validates :status,     presence: true
 
   validate :patient_not_already_waiting
