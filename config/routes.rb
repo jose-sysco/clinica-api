@@ -128,7 +128,11 @@ Rails.application.routes.draw do
           patch :update_license
         end
       end
-      resources :users, only: [ :index, :create, :update ]
+      resources :users, only: [ :index, :create, :update ] do
+          member do
+            patch :change_password
+          end
+        end
       resources :plan_configurations, only: [ :index, :update ]
       resources :billing, only: [ :index, :create, :destroy ]
     end

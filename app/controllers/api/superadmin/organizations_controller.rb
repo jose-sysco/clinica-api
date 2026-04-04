@@ -89,7 +89,7 @@ module Api
           timezone:  org.timezone,
           subdomain: org.subdomain,
           users:     org.users.order(:role, :first_name).map do |u|
-            { id: u.id, full_name: u.full_name, email: u.email, role: u.role, status: u.status }
+            { id: u.id, full_name: u.full_name, email: u.email, role: u.role, status: u.status, last_login_ip: u.last_login_ip }
           end
         )
       end

@@ -40,6 +40,8 @@ module Api
             end
           end
 
+          user.update_column(:last_login_ip, request.headers["CF-Connecting-IP"] || request.remote_ip)
+
           access_token              = generate_jwt(user)
           raw_refresh_token, _record = RefreshToken.generate_for(user)
 
