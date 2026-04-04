@@ -75,7 +75,8 @@ module Api
           patients_count:       org.patients.count,
           appointments_count:   org.appointments.count,
           last_appointment_at:  org.appointments.maximum(:created_at),
-          created_at:           org.created_at
+          created_at:           org.created_at,
+          registration_ip:      org.registration_ip
         }
       end
 

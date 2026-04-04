@@ -8,6 +8,7 @@ module Api
         def create
           ActiveRecord::Base.transaction do
             @organization = Organization.new(organization_params)
+            @organization.registration_ip = request.headers["CF-Connecting-IP"] || request.remote_ip
             @organization.save!
 
             @user = User.new(user_params)
