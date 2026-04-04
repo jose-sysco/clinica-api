@@ -37,6 +37,23 @@ module Api
         render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       end
 
+      def change_password
+        ActsAsTenant.without_tenant do
+          user = User.find(params[:id])
+          password = params[:password].to_s.strip
+          if password.length < 6
+            render json: { errors: [ "La contraseña debe tener al menos 6 caracteres" ] }, status: :unprocessable_entity
+            return
+          end
+          user.password = password
+          user.password_confirmation = password
+          user.save!
+          render json: { message: "Contraseña actualizada correctamente" }
+        end
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+      end
+
       private
 
       def user_params
