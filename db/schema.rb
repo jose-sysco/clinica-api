@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_04_034248) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_07_035019) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -96,6 +96,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_04_034248) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "inventory_movements", default: false, null: false
+    t.decimal "consultation_fee", precision: 10, scale: 2
+    t.decimal "card_surcharge_percent", precision: 5, scale: 2
     t.index ["license_number"], name: "index_doctors_on_license_number", unique: true
     t.index ["organization_id"], name: "index_doctors_on_organization_id"
     t.index ["user_id"], name: "index_doctors_on_user_id"
@@ -244,6 +246,21 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_04_034248) do
     t.index ["organization_id", "status"], name: "index_patients_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_patients_on_organization_id"
     t.index ["owner_id"], name: "index_patients_on_owner_id"
+  end
+
+  create_table "payments", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.bigint "appointment_id", null: false
+    t.bigint "recorded_by_id", null: false
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.integer "payment_method", default: 0, null: false
+    t.string "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appointment_id"], name: "index_payments_on_appointment_id"
+    t.index ["organization_id", "appointment_id"], name: "index_payments_on_organization_id_and_appointment_id"
+    t.index ["organization_id"], name: "index_payments_on_organization_id"
+    t.index ["recorded_by_id"], name: "index_payments_on_recorded_by_id"
   end
 
   create_table "plan_configurations", force: :cascade do |t|
@@ -396,6 +413,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_04_034248) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "billing_records", "organizations"
   add_foreign_key "billing_records", "users", column: "recorded_by_id"
+  add_foreign_key "payments", "appointments"
+  add_foreign_key "payments", "users", column: "recorded_by_id"
   add_foreign_key "products", "organizations"
   add_foreign_key "refresh_tokens", "users"
   add_foreign_key "stock_movements", "doctors"

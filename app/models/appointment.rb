@@ -29,7 +29,8 @@ class Appointment < ApplicationRecord
   belongs_to :patient
   belongs_to :owner, optional: true
 
-  has_one :medical_record
+  has_one  :medical_record
+  has_many :payments, dependent: :destroy
 
   # Enums
   enum :status, { pending: 0, confirmed: 1, in_progress: 2, completed: 3, cancelled: 4, no_show: 5 }
@@ -65,6 +66,19 @@ class Appointment < ApplicationRecord
 
   # Disparar los jobs desde el modelo
   after_update_commit :handle_status_change
+
+  def total_paid
+    payments.sum(:amount).to_f
+  end
+
+  def payment_status
+    fee  = doctor.consultation_fee&.to_f
+    paid = total_paid
+    return "sin_tarifa" if fee.nil?
+    return "pagado"     if paid >= fee
+    return "parcial"    if paid > 0
+    "sin_pago"
+  end
 
   private
 

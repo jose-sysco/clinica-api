@@ -67,7 +67,11 @@ Rails.application.routes.draw do
           patch :start
           patch :no_show
         end
+        resources :payments, only: [ :index, :create ]
       end
+
+      # Payments report
+      get "payments", to: "payments#index_all"
 
       # Notifications
       resources :notifications, only: [ :index, :show ] do

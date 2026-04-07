@@ -51,7 +51,7 @@ module Api
         peak_hours = appt_scope
           .where(scheduled_at: week_start.beginning_of_day..week_end.end_of_day)
           .where.not(status: [ :cancelled, :no_show ])
-          .group(Arel.sql("EXTRACT(HOUR FROM scheduled_at AT TIME ZONE '#{tz}')::integer"))
+          .group(Arel.sql("EXTRACT(HOUR FROM scheduled_at::timestamptz AT TIME ZONE '#{tz}')::integer"))
           .order(Arel.sql("1 ASC"))
           .count
           .map { |hour, count| { hour: "#{hour.to_i}:00", count: count } }
