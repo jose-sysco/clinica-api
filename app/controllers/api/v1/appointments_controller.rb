@@ -6,7 +6,7 @@ module Api
       def index
         authorize Appointment, policy_class: AppointmentPolicy
 
-        appointments = Appointment.includes(:doctor, :patient, :owner)
+        appointments = Appointment.includes(:doctor, :patient, :owner, :payments)
 
         appointments = appointments.for_doctor(params[:doctor_id])      if params[:doctor_id].present?
         appointments = appointments.for_patient(params[:patient_id])    if params[:patient_id].present?
@@ -117,8 +117,23 @@ module Api
           return
         end
 
-        @appointment.completed!
-        render json: { message: "Cita completada correctamente" }, status: :ok
+        ActiveRecord::Base.transaction do
+          @appointment.update!(status: :completed)
+
+          if params.dig(:payment, :amount).present?
+            @appointment.payments.create!(
+              amount:         params[:payment][:amount],
+              payment_method: params[:payment][:payment_method] || :cash,
+              notes:          params[:payment][:notes],
+              organization:   ActsAsTenant.current_tenant,
+              recorded_by:    current_user
+            )
+          end
+        end
+
+        render json: appointment_json(@appointment.reload), status: :ok
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       end
 
       def start
@@ -245,9 +260,10 @@ module Api
           recurrence_index:    appointment.recurrence_index,
           recurrence_total:    appointment.recurrence_total,
           doctor: {
-            id:                 appointment.doctor.id,
-            full_name:          appointment.doctor.full_name,
-            inventory_movements: appointment.doctor.inventory_movements
+            id:                     appointment.doctor.id,
+            full_name:              appointment.doctor.full_name,
+            inventory_movements:    appointment.doctor.inventory_movements,
+            card_surcharge_percent: appointment.doctor.card_surcharge_percent&.to_f
           },
           patient: {
             id:   appointment.patient.id,
@@ -257,6 +273,11 @@ module Api
             id:        appointment.owner.id,
             full_name: appointment.owner.full_name,
             phone:     appointment.owner.phone
+          },
+          payment_summary: {
+            total_paid:       appointment.total_paid,
+            consultation_fee: appointment.doctor.consultation_fee&.to_f,
+            payment_status:   appointment.payment_status
           }
         }
       end

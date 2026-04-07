@@ -176,7 +176,8 @@ module Api
       def doctor_params
         params.require(:doctor).permit(
           :specialty, :license_number,
-          :bio, :consultation_duration, :status, :inventory_movements
+          :bio, :consultation_duration, :status, :inventory_movements,
+          :consultation_fee, :card_surcharge_percent
         )
       end
 
@@ -207,6 +208,8 @@ module Api
           license_number:        doctor.license_number,
           bio:                   doctor.bio,
           consultation_duration: doctor.consultation_duration,
+          consultation_fee:        doctor.consultation_fee&.to_f,
+          card_surcharge_percent:  doctor.card_surcharge_percent&.to_f,
           status:                doctor.status,
           inventory_movements:   doctor.inventory_movements,
           schedules:             doctor.schedules.map { |s| schedule_json(s) },

@@ -24,9 +24,12 @@ class Doctor < ApplicationRecord
   has_many   :schedule_blocks, dependent: :destroy
   has_many   :appointments,    dependent: :destroy
   has_many :medical_records
+  has_many :payments, through: :appointments
 
   # Enums
   enum :status, { active: 0, inactive: 1, on_leave: 2 }
+
+  before_validation { self.license_number = nil if license_number.blank? }
 
   # Validaciones
   validates :specialty,            presence: true
