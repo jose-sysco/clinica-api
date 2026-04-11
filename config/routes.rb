@@ -6,10 +6,11 @@ Rails.application.routes.draw do
 
   # ── Sidekiq Web UI ────────────────────────────────────────────────────────────
   # Rails API mode no incluye sesiones — se las inyectamos solo a Sidekiq::Web
-  Sidekiq::Web.use Rack::Session::Cookie,
+  Sidekiq::Web.use ActionDispatch::Session::CookieStore,
+    key:       "_sidekiq_session",
     secret:    Rails.application.secret_key_base,
     same_site: :strict,
-    max_age:   86400
+    expire_after: 24.hours
 
   if Rails.env.production?
     Sidekiq::Web.use(Rack::Auth::Basic) do |username, password|
