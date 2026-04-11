@@ -4,7 +4,13 @@ Rails.application.routes.draw do
   # ── Health check (sin auth — para load balancers y Docker healthcheck) ──────
   get "/health", to: "health#show"
 
-  # ── Sidekiq Web UI (Basic Auth en producción, libre en desarrollo) ───────────
+  # ── Sidekiq Web UI ────────────────────────────────────────────────────────────
+  # Rails API mode no incluye sesiones — se las inyectamos solo a Sidekiq::Web
+  Sidekiq::Web.use Rack::Session::Cookie,
+    secret:    Rails.application.secret_key_base,
+    same_site: :strict,
+    max_age:   86400
+
   if Rails.env.production?
     Sidekiq::Web.use(Rack::Auth::Basic) do |username, password|
       sidekiq_user = ENV.fetch("SIDEKIQ_WEB_USERNAME", "admin")
