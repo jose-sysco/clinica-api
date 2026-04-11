@@ -13,7 +13,7 @@ Rails.application.routes.draw do
         ActiveSupport::SecurityUtils.secure_compare(password, sidekiq_pass)
     end
   end
-  mount Sidekiq::Web => "/sidekiq"
+  mount Sidekiq::Web => "/panel-jobs"
 
   mount Rswag::Ui::Engine => "/api-docs"
   mount Rswag::Api::Engine => "/api-docs"

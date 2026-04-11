@@ -2,6 +2,15 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Infraestructura de Producción
+
+| Servicio | Plataforma | Plan | URL |
+|---|---|---|---|
+| **Frontend** (Next.js) | Vercel | Hobby (free) | `agendia.sysco.com.gt` |
+| **API** (Rails) | Render | Free (750h/mes) | `api-agendia.sysco.com.gt` |
+| **Base de datos** (PostgreSQL) | Supabase | Free | `jzxymuminlzbmpbyczqz.supabase.co` |
+| **Redis / Sidekiq** | Upstash | Free Tier | `apparent-molly-68087.upstash.io` |
+
 ## Commands
 
 ```bash
