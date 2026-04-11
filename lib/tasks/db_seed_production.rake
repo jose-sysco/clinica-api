@@ -27,8 +27,8 @@ namespace :db do
           plan:              :basic,
           name:              "Básico",
           display_name:      "Starter",
-          price_monthly:     150.0,
-          price_monthly_usd: 20.0,
+          price_monthly:     450.0,
+          price_monthly_usd: 60.0,
           max_doctors:       3,
           max_patients:      200,
           features:          %w[appointments medical_records notifications reports]
@@ -37,8 +37,8 @@ namespace :db do
           plan:              :professional,
           name:              "Profesional",
           display_name:      "Pro",
-          price_monthly:     400.0,
-          price_monthly_usd: 50.0,
+          price_monthly:     825.0,
+          price_monthly_usd: 110.0,
           max_doctors:       10,
           max_patients:      1000,
           features:          %w[appointments medical_records notifications reports whatsapp_notifications multi_doctor]
@@ -47,8 +47,8 @@ namespace :db do
           plan:              :enterprise,
           name:              "Empresarial",
           display_name:      "Enterprise",
-          price_monthly:     3000.0,
-          price_monthly_usd: 400.0,
+          price_monthly:     2625.0,
+          price_monthly_usd: 350.0,
           max_doctors:       nil,
           max_patients:      nil,
           features:          PlanConfiguration::FEATURES.keys

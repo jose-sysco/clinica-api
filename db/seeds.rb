@@ -1,3 +1,8 @@
+if Rails.env.production?
+  puts "⏭️  Seeds omitidos en producción — usar db:seed:production"
+  return
+end
+
 require 'faker'
 
 Faker::Config.locale = 'es'
