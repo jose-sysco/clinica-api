@@ -83,3 +83,5 @@ production:
   database: clinica_api_production
   username: clinica_api
   password: <%= ENV["CLINICA_API_DATABASE_PASSWORD"] %>
+  prepared_statements: false
+  advisory_locks: false
