@@ -6,9 +6,53 @@
 #   3. Blocklist automático para IPs abusivas              — ban temporal de 1h
 
 # ── Cache store ───────────────────────────────────────────────────────────────
-# Rack::Attack acepta un cliente Redis directamente.
-# Usamos la misma instancia de Redis que Sidekiq.
-Rack::Attack.cache.store = Redis.new(url: ENV.fetch("REDIS_URL", "redis://localhost:6379/1"))
+# Wraps Redis with graceful fallback: if Redis is unavailable (e.g. Upstash
+# monthly limit exceeded), all throttle checks return 0 so requests are
+# allowed through instead of raising a 500.
+class RackAttackSafeRedis
+  RESCUED = [ Redis::CommandError, Redis::CannotConnectError,
+              Redis::TimeoutError, RedisClient::CommandError ].freeze
+
+  def initialize(url)
+    ssl_params = { verify_mode: OpenSSL::SSL::VERIFY_NONE } if url.start_with?("rediss://")
+    @redis = Redis.new(url: url, ssl_params: ssl_params)
+  end
+
+  def incr(key)
+    @redis.incr(key)
+  rescue *RESCUED => e
+    Rails.logger.warn "[RackAttack] Redis unavailable — failing open (#{e.message.truncate(120)})"
+    0
+  end
+
+  def expire(key, ttl)
+    @redis.expire(key, ttl)
+  rescue *RESCUED
+    nil
+  end
+
+  def get(key)
+    @redis.get(key)
+  rescue *RESCUED
+    nil
+  end
+
+  def setex(key, ttl, value)
+    @redis.setex(key, ttl, value)
+  rescue *RESCUED
+    nil
+  end
+
+  def del(*keys)
+    @redis.del(*keys)
+  rescue *RESCUED
+    nil
+  end
+end
+
+Rack::Attack.cache.store = RackAttackSafeRedis.new(
+  ENV.fetch("REDIS_URL", "redis://localhost:6379/1")
+)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
