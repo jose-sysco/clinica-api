@@ -2,7 +2,7 @@ require "sidekiq/web"
 
 Rails.application.routes.draw do
   # ── Health check (sin auth — para load balancers y Docker healthcheck) ──────
-  get "/health", to: "health#show"
+  get "/health", to: "health#ping"
 
   # ── Sidekiq Web UI ────────────────────────────────────────────────────────────
   # Rails API mode no incluye sesiones — se las inyectamos solo a Sidekiq::Web
