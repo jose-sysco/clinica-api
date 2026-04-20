@@ -43,6 +43,24 @@ module Api
             updates[:suspended_at] = nil
           end
 
+          # Precio personalizado explícito (descuento, acuerdo especial)
+          if params[:locked_price_monthly].present?
+            updates[:locked_price_monthly] = params[:locked_price_monthly]
+          end
+          if params[:locked_price_monthly_usd].present?
+            updates[:locked_price_monthly_usd] = params[:locked_price_monthly_usd]
+          end
+
+          # Si cambia de plan y no se especificó precio personalizado,
+          # actualizar locked_price al precio vigente del nuevo plan.
+          if params[:plan].present? && params[:locked_price_monthly].blank?
+            plan_config = PlanConfiguration.find_by(plan: params[:plan])
+            if plan_config
+              updates[:locked_price_monthly]     = plan_config.price_monthly
+              updates[:locked_price_monthly_usd] = plan_config.price_monthly_usd
+            end
+          end
+
           org.update!(updates)
           render json: org_detail_json(org)
         end
@@ -53,30 +71,39 @@ module Api
       private
 
       def org_summary_json(org)
+        plan_config = PlanConfiguration.find_by(plan: org.plan)
+
         {
-          id:                   org.id,
-          name:                 org.name,
-          slug:                 org.slug,
-          email:                org.email,
-          phone:                org.phone,
-          city:                 org.city,
-          country:              org.country,
-          clinic_type:          org.clinic_type,
-          status:               org.status,
-          plan:                 org.plan,
-          trial_ends_at:        org.trial_ends_at,
-          trial_days_remaining: org.trial_days_remaining,
-          trial_expired:        org.trial_expired?,
-          on_trial:             org.trial?,
-          expiring_soon:        org.expiring_soon?,
-          suspended_at:         org.suspended_at,
-          users_count:          org.users.count,
-          doctors_count:        org.doctors.count,
-          patients_count:       org.patients.count,
-          appointments_count:   org.appointments.count,
-          last_appointment_at:  org.appointments.maximum(:created_at),
-          created_at:           org.created_at,
-          registration_ip:      org.registration_ip
+          id:                        org.id,
+          name:                      org.name,
+          slug:                      org.slug,
+          email:                     org.email,
+          phone:                     org.phone,
+          city:                      org.city,
+          country:                   org.country,
+          clinic_type:               org.clinic_type,
+          status:                    org.status,
+          plan:                      org.plan,
+          trial_ends_at:             org.trial_ends_at,
+          trial_days_remaining:      org.trial_days_remaining,
+          trial_expired:             org.trial_expired?,
+          on_trial:                  org.trial?,
+          expiring_soon:             org.expiring_soon?,
+          suspended_at:              org.suspended_at,
+          users_count:               org.users.count,
+          doctors_count:             org.doctors.count,
+          patients_count:            org.patients.count,
+          appointments_count:        org.appointments.count,
+          last_appointment_at:       org.appointments.maximum(:created_at),
+          created_at:                org.created_at,
+          registration_ip:           org.registration_ip,
+          # Precio real del cliente
+          locked_price_monthly:      org.locked_price_monthly,
+          locked_price_monthly_usd:  org.locked_price_monthly_usd,
+          plan_price_monthly:        plan_config&.price_monthly,
+          plan_price_monthly_usd:    plan_config&.price_monthly_usd,
+          has_custom_price:          org.locked_price_monthly.present? &&
+                                       org.locked_price_monthly != plan_config&.price_monthly
         }
       end
 

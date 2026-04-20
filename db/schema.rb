@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_07_035019) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_20_192649) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -202,6 +202,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_035019) do
     t.datetime "suspended_at"
     t.string "primary_color"
     t.string "registration_ip"
+    t.decimal "locked_price_monthly", precision: 10, scale: 2
+    t.decimal "locked_price_monthly_usd", precision: 10, scale: 2
     t.index ["email"], name: "index_organizations_on_email", unique: true
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["subdomain"], name: "index_organizations_on_subdomain", unique: true

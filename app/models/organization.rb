@@ -53,6 +53,7 @@ class Organization < ApplicationRecord
   before_validation :generate_slug,      if: -> { slug.blank? && name.present? }
   before_validation :generate_subdomain, if: -> { subdomain.blank? && name.present? }
   before_create     :set_trial_period
+  before_create     :lock_plan_price
 
   # --- Helpers de licencia ---
 
@@ -102,5 +103,16 @@ class Organization < ApplicationRecord
 
   def generate_subdomain
     self.subdomain = slug
+  end
+
+  # Fija el precio vigente del plan al momento del registro.
+  # Clientes existentes conservan su precio aunque el plan cambie
+  # de precio en el futuro.
+  def lock_plan_price
+    config = PlanConfiguration.find_by(plan: plan)
+    return unless config
+
+    self.locked_price_monthly     = config.price_monthly
+    self.locked_price_monthly_usd = config.price_monthly_usd
   end
 end

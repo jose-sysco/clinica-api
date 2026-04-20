@@ -55,12 +55,26 @@ namespace :db do
         }
       ]
 
+      # Campos de precio: solo se escriben al crear por primera vez.
+      # Para cambiarlos en producción, hacerlo directamente en la BD o
+      # con una migración puntual — nunca hardcodear aquí.
+      PRICE_FIELDS = %i[price_monthly price_monthly_usd].freeze
+
       ActsAsTenant.without_tenant do
         plans.each do |attrs|
           config = PlanConfiguration.find_or_initialize_by(plan: attrs[:plan])
-          config.assign_attributes(attrs.except(:plan))
+          is_new = config.new_record?
+
+          if is_new
+            config.assign_attributes(attrs.except(:plan))
+          else
+            # En registros existentes solo actualizar límites y features,
+            # nunca precios (para no pisar cambios manuales en producción).
+            config.assign_attributes(attrs.except(:plan, *PRICE_FIELDS))
+          end
+
           config.save!
-          puts "   #{config.previously_new_record? ? 'creado' : 'actualizado'}: #{attrs[:display_name]}"
+          puts "   #{is_new ? 'creado' : 'actualizado (sin tocar precios)'}: #{attrs[:display_name]}"
         end
       end
 

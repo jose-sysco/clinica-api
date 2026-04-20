@@ -20,15 +20,20 @@ module Api
           total_collected = 0.0
 
           data = orgs.map do |org|
-            billing    = records[org.id]
-            price_gtq  = plan_configs[org.plan]&.price_monthly.to_f
+            billing = records[org.id]
+
+            # Precio real del cliente: locked_price tiene prioridad sobre el precio del plan.
+            # Esto respeta acuerdos especiales y grandfathering.
+            price_gtq = org.locked_price_monthly.presence&.to_f ||
+                        plan_configs[org.plan]&.price_monthly.to_f
+            price_usd = org.locked_price_monthly_usd.presence&.to_f ||
+                        plan_configs[org.plan]&.price_monthly_usd.to_f
 
             total_expected  += price_gtq
             total_collected += billing&.amount_paid.to_f
 
             {
-              organization:  org_billing_json(org),
-              plan_price_gtq: price_gtq,
+              organization:   org_billing_json(org, price_gtq, price_usd),
               billing_record: billing ? billing_json(billing) : nil
             }
           end
@@ -39,8 +44,9 @@ module Api
               total_orgs:          orgs.count,
               paid:                records.size,
               pending:             orgs.count - records.size,
-              total_expected_gtq:  total_expected,
-              total_collected_gtq: total_collected
+              total_expected_gtq:  total_expected.round(2),
+              total_collected_gtq: total_collected.round(2),
+              collection_rate:     total_expected > 0 ? (total_collected / total_expected * 100).round(1) : 0
             },
             data: data
           }
@@ -90,17 +96,21 @@ module Api
         Date.current.beginning_of_month
       end
 
-      def org_billing_json(org)
+      def org_billing_json(org, price_gtq, price_usd)
         {
-          id:             org.id,
-          name:           org.name,
-          slug:           org.slug,
-          email:          org.email,
-          plan:           org.plan,
-          status:         org.status,
-          suspended_at:   org.suspended_at,
-          doctors_count:  org.doctors.count,
-          patients_count: org.patients.count
+          id:                      org.id,
+          name:                    org.name,
+          slug:                    org.slug,
+          email:                   org.email,
+          plan:                    org.plan,
+          status:                  org.status,
+          suspended_at:            org.suspended_at,
+          doctors_count:           org.doctors.count,
+          patients_count:          org.patients.count,
+          # Precio real del cliente (locked > plan)
+          price_gtq:               price_gtq,
+          price_usd:               price_usd,
+          has_custom_price:        org.locked_price_monthly.present?
         }
       end
 
