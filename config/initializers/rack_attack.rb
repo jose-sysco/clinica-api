@@ -6,53 +6,11 @@
 #   3. Blocklist automático para IPs abusivas              — ban temporal de 1h
 
 # ── Cache store ───────────────────────────────────────────────────────────────
-# Wraps Redis with graceful fallback: if Redis is unavailable (e.g. Upstash
-# monthly limit exceeded), all throttle checks return 0 so requests are
-# allowed through instead of raising a 500.
-class RackAttackSafeRedis
-  RESCUED = [ Redis::CommandError, Redis::CannotConnectError,
-              Redis::TimeoutError, RedisClient::CommandError ].freeze
-
-  def initialize(url)
-    ssl_params = { verify_mode: OpenSSL::SSL::VERIFY_NONE } if url.start_with?("rediss://")
-    @redis = Redis.new(url: url, ssl_params: ssl_params)
-  end
-
-  def incr(key)
-    @redis.incr(key)
-  rescue *RESCUED => e
-    Rails.logger.warn "[RackAttack] Redis unavailable — failing open (#{e.message.truncate(120)})"
-    0
-  end
-
-  def expire(key, ttl)
-    @redis.expire(key, ttl)
-  rescue *RESCUED
-    nil
-  end
-
-  def get(key)
-    @redis.get(key)
-  rescue *RESCUED
-    nil
-  end
-
-  def setex(key, ttl, value)
-    @redis.setex(key, ttl, value)
-  rescue *RESCUED
-    nil
-  end
-
-  def del(*keys)
-    @redis.del(*keys)
-  rescue *RESCUED
-    nil
-  end
-end
-
-Rack::Attack.cache.store = RackAttackSafeRedis.new(
-  ENV.fetch("REDIS_URL", "redis://localhost:6379/1")
-)
+# MemoryStore: no genera requests a Redis.
+# Funciona correctamente en single-dyno (Render free tier) — los contadores viven
+# en el proceso y se reinician al redeploy, lo cual es aceptable para rate limiting.
+# Si en el futuro se escala a múltiples dynos, cambiar a un store Redis distribuido.
+Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 

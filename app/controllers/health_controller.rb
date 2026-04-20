@@ -34,7 +34,8 @@ class HealthController < ActionController::Base
   end
 
   def check_redis
-    Redis.new(url: ENV.fetch("REDIS_URL", "redis://localhost:6379/0")).ping
+    # Reutiliza el connection pool de Sidekiq en lugar de abrir una conexión nueva.
+    Sidekiq.redis { |conn| conn.call("PING") }
     { ok: true }
   rescue => e
     { ok: false, error: e.message }

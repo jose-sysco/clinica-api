@@ -9,7 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 | **Frontend** (Next.js) | Vercel | Hobby (free) | `agendia.sysco.com.gt` |
 | **API** (Rails) | Render | Free (750h/mes) | `api-agendia.sysco.com.gt` |
 | **Base de datos** (PostgreSQL) | Supabase | Free | `jzxymuminlzbmpbyczqz.supabase.co` |
-| **Redis / Sidekiq** | Upstash | Free Tier | `apparent-molly-68087.upstash.io` |
+| **Redis / Sidekiq** | Upstash | Free Tier (500k cmds/mes) | `apparent-molly-68087.upstash.io` |
+| **Uptime monitoring** | UptimeRobot | Free | Apuntar a `GET /ping` (no a `/health`) |
 
 ## Commands
 

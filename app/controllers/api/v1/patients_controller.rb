@@ -31,6 +31,7 @@ module Api
       end
 
       def create
+        authorize Patient, policy_class: PatientPolicy
         patient = if @owner
           @owner.patients.new(patient_params)
         else
@@ -45,11 +46,13 @@ module Api
       end
 
       def update
+        authorize @patient, policy_class: PatientPolicy
         @patient.update!(patient_params)
         render json: patient_json(@patient)
       end
 
       def destroy
+        authorize @patient, policy_class: PatientPolicy
         @patient.update!(status: :inactive)
         render json: { message: "Paciente desactivado correctamente" }
       end

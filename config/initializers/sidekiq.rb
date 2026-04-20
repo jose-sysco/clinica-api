@@ -3,10 +3,11 @@ redis_config[:ssl_params] = { verify_mode: OpenSSL::SSL::VERIFY_NONE } if ENV["R
 
 Sidekiq.configure_server do |config|
   config.redis = redis_config
-  # Free-tier Upstash has a 500k requests/month cap.
-  # Default heartbeat is every 5s (~518k req/month solo en heartbeats).
-  # Increasing to 30s reduces heartbeat cost to ~86k req/month.
-  config.heartbeat_interval = 30
+  # Upstash free tier: 500k requests/month.
+  # Default heartbeat cada 5s genera ~2M cmds/mes (4 cmds × 12/min × 60 × 24 × 30).
+  # A 60s se reducen a ~43k cmds/mes. Sidekiq 8 usa acceso hash; el setter
+  # heartbeat_interval= fue removido en v8.
+  config[:heartbeat_interval] = 60
 end
 
 Sidekiq.configure_client do |config|
