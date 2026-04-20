@@ -1,10 +1,10 @@
 class MedicalRecordPolicy < ApplicationPolicy
   def index?
-    true
+    admin? || receptionist? || doctor?
   end
 
   def show?
-    true
+    admin? || receptionist? || doctor?
   end
 
   def create?

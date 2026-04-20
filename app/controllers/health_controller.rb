@@ -17,7 +17,7 @@ class HealthController < ActionController::Base
     }, status: status
   end
 
-  def ping 
+  def ping
     render json: {
       status: :ok,
       time: Time.current.iso8601
