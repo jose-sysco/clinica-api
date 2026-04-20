@@ -56,7 +56,7 @@ RSpec.describe "Auth API", type: :request do
       token = sign_in_as(user, org)
 
       delete "/api/v1/auth/sign_out",
-        params: { refresh_token: JSON.parse(response.body)["refresh_token"] rescue "" }.to_json,
+        params: { refresh_token: (JSON.parse(response.body)["refresh_token"] rescue "") }.to_json,
         headers: auth_headers(token, org)
 
       expect(response).to have_http_status(:ok)
