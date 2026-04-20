@@ -6,6 +6,7 @@ module Api
 
       # GET /api/v1/medical_records — todos los expedientes de la org (paginado)
       def index
+        authorize MedicalRecord, policy_class: MedicalRecordPolicy
         scope = MedicalRecord.includes(:doctor, :patient).order(created_at: :desc)
         scope = scope.where(patient_id: params[:patient_id]) if params[:patient_id].present?
         pagy, records = pagy(scope, limit: params[:per_page] || 20)
@@ -17,6 +18,7 @@ module Api
 
       # GET /api/v1/patients/:patient_id/medical_records
       def patient_records
+        authorize MedicalRecord, policy_class: MedicalRecordPolicy
         records = @patient.medical_records
                           .includes(:doctor)
                           .order(created_at: :desc)
@@ -24,10 +26,12 @@ module Api
       end
 
       def show
+        authorize @medical_record, policy_class: MedicalRecordPolicy
         render json: medical_record_json(@medical_record)
       end
 
       def create
+        authorize MedicalRecord, policy_class: MedicalRecordPolicy
         record = MedicalRecord.new(medical_record_params)
         record.organization = ActsAsTenant.current_tenant
 
@@ -62,11 +66,14 @@ module Api
 
         render json: medical_record_json(record), status: :created
 
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "Cita no encontrada" }, status: :not_found
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
       end
 
       def update
+        authorize @medical_record, policy_class: MedicalRecordPolicy
         @medical_record.update!(medical_record_params)
         render json: medical_record_json(@medical_record)
       rescue ActiveRecord::RecordInvalid => e

@@ -269,11 +269,11 @@ module Api
             id:   appointment.patient.id,
             name: appointment.patient.name
           },
-          owner: {
+          owner: appointment.owner ? {
             id:        appointment.owner.id,
             full_name: appointment.owner.full_name,
             phone:     appointment.owner.phone
-          },
+          } : nil,
           payment_summary: {
             total_paid:       appointment.total_paid,
             consultation_fee: appointment.doctor.consultation_fee&.to_f,
