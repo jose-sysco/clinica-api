@@ -72,10 +72,10 @@ module Api
             id:   entry.patient_id,
             name: entry.patient.name
           },
-          owner: {
+          owner: entry.owner ? {
             id:   entry.owner_id,
             name: entry.owner.full_name
-          }
+          } : nil
         }
       end
     end
