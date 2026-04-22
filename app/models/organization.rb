@@ -33,7 +33,8 @@ class Organization < ApplicationRecord
   has_many :owners,          dependent: :destroy
   has_many :patients,        dependent: :destroy
   has_many :appointments,    dependent: :destroy
-  has_many :notifications,   dependent: :destroy
+  has_many :notifications,        dependent: :destroy
+  has_many :license_change_logs,  dependent: :destroy
 
   # Enums
   enum :clinic_type, { veterinary: 0, pediatric: 1, general: 2, dental: 3, psychology: 4, physiotherapy: 5, nutrition: 6, beauty: 7, coaching: 8, legal: 9, fitness: 10 }

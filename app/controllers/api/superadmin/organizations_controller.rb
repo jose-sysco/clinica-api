@@ -32,6 +32,10 @@ module Api
         ActsAsTenant.without_tenant do
           org = Organization.find(params[:id])
 
+          # Snapshot of fields before the update for the audit log
+          tracked_fields = %i[plan status trial_ends_at suspended_at locked_price_monthly locked_price_monthly_usd]
+          before_snapshot = tracked_fields.index_with { |f| org.public_send(f)&.to_s }
+
           updates = {}
           updates[:plan]          = params[:plan]          if params[:plan].present?
           updates[:status]        = params[:status]        if params[:status].present?
@@ -62,10 +66,48 @@ module Api
           end
 
           org.update!(updates)
+
+          # Build diff for audit log
+          after_snapshot = tracked_fields.index_with { |f| org.public_send(f)&.to_s }
+          diff = tracked_fields.each_with_object({}) do |field, h|
+            next if before_snapshot[field] == after_snapshot[field]
+
+            h[field] = { from: before_snapshot[field], to: after_snapshot[field] }
+          end
+
+          LicenseChangeLog.create!(
+            organization: org,
+            changed_by:   current_user,
+            changes:      diff,
+            notes:        params[:notes].presence
+          )
+
           render json: org_detail_json(org)
         end
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+      end
+
+      def license_logs
+        ActsAsTenant.without_tenant do
+          org  = Organization.find(params[:id])
+          logs = org.license_change_logs.order(created_at: :desc).limit(50)
+          render json: logs.map { |l| license_log_json(l) }
+        end
+      end
+
+      def billing_history
+        ActsAsTenant.without_tenant do
+          org     = Organization.find(params[:id])
+          records = BillingRecord.where(organization: org).order(period: :desc)
+          plan_configs = PlanConfiguration.all.index_by(&:plan)
+
+          render json: records.map { |r|
+            price_gtq = org.locked_price_monthly.presence&.to_f ||
+                        plan_configs[org.plan]&.price_monthly.to_f
+            billing_history_json(r, price_gtq)
+          }
+        end
       end
 
       private
@@ -97,7 +139,6 @@ module Api
           last_appointment_at:       org.appointments.maximum(:created_at),
           created_at:                org.created_at,
           registration_ip:           org.registration_ip,
-          # Precio real del cliente
           locked_price_monthly:      org.locked_price_monthly,
           locked_price_monthly_usd:  org.locked_price_monthly_usd,
           plan_price_monthly:        plan_config&.price_monthly,
@@ -119,6 +160,31 @@ module Api
             { id: u.id, full_name: u.full_name, email: u.email, role: u.role, status: u.status, last_login_ip: u.last_login_ip }
           end
         )
+      end
+
+      def license_log_json(log)
+        {
+          id:         log.id,
+          changes:    log.changes,
+          notes:      log.notes,
+          changed_by: log.changed_by&.full_name || "Sistema",
+          created_at: log.created_at
+        }
+      end
+
+      def billing_history_json(record, price_gtq)
+        {
+          id:          record.id,
+          period:      record.period.strftime("%Y-%m"),
+          period_label: record.period.strftime("%B %Y"),
+          amount_paid: record.amount_paid,
+          currency:    record.currency,
+          notes:       record.notes,
+          recorded_at: record.recorded_at,
+          recorded_by: record.recorded_by&.full_name,
+          expected:    price_gtq,
+          difference:  (record.amount_paid.to_f - price_gtq).round(2)
+        }
       end
     end
   end
