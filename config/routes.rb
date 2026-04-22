@@ -137,6 +137,8 @@ Rails.application.routes.draw do
       resources :organizations, only: [ :index, :show ] do
         member do
           patch :update_license
+          get   :license_logs
+          get   :billing_history
         end
       end
       resources :users, only: [ :index, :create, :update ] do

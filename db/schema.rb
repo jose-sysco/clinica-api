@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_07_035019) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_20_194312) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -109,6 +109,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_035019) do
     t.index ["jti"], name: "index_jwt_denylist_on_jti", unique: true
   end
 
+  create_table "license_change_logs", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "changed_by_id"
+    t.jsonb "changes", default: {}, null: false
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["changed_by_id"], name: "index_license_change_logs_on_changed_by_id"
+    t.index ["created_at"], name: "index_license_change_logs_on_created_at"
+    t.index ["organization_id"], name: "index_license_change_logs_on_organization_id"
+  end
+
   create_table "medical_records", force: :cascade do |t|
     t.integer "organization_id", null: false
     t.integer "appointment_id", null: false
@@ -202,6 +214,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_035019) do
     t.datetime "suspended_at"
     t.string "primary_color"
     t.string "registration_ip"
+    t.decimal "locked_price_monthly", precision: 10, scale: 2
+    t.decimal "locked_price_monthly_usd", precision: 10, scale: 2
     t.index ["email"], name: "index_organizations_on_email", unique: true
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["subdomain"], name: "index_organizations_on_subdomain", unique: true
@@ -413,6 +427,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_07_035019) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "billing_records", "organizations"
   add_foreign_key "billing_records", "users", column: "recorded_by_id"
+  add_foreign_key "license_change_logs", "organizations"
+  add_foreign_key "license_change_logs", "users", column: "changed_by_id"
   add_foreign_key "payments", "appointments"
   add_foreign_key "payments", "users", column: "recorded_by_id"
   add_foreign_key "products", "organizations"
