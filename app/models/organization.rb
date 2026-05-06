@@ -25,6 +25,8 @@ class Organization < ApplicationRecord
   # Logo upload
   has_one_attached :logo_file
 
+  belongs_to :salesperson, optional: true
+
   # Multitenant
   has_many :users,           dependent: :destroy
   has_many :doctors,         dependent: :destroy
@@ -74,6 +76,14 @@ class Organization < ApplicationRecord
 
   def enabled_features
     PlanConfiguration.features_for(plan)
+  end
+
+  def effective_max_doctors
+    max_doctors_override || PlanConfiguration.find_by(plan: plan)&.max_doctors
+  end
+
+  def effective_max_patients
+    max_patients_override || PlanConfiguration.find_by(plan: plan)&.max_patients
   end
 
   def license_active?

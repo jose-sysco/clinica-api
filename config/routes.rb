@@ -128,6 +128,13 @@ Rails.application.routes.draw do
         end
       resources :plan_configurations, only: [ :index, :update ]
       resources :billing, only: [ :index, :create, :destroy ]
+      resources :salespersons, only: [ :index, :create, :update, :destroy ] do
+        resources :payments, only: [ :index, :create, :update, :destroy ],
+                  controller: "salesperson_payments" do
+          collection { get :preview }
+        end
+      end
+      get "reports/commissions", to: "reports#commissions"
     end
   end
   match "*unmatched", to: "errors#not_found", via: :all,

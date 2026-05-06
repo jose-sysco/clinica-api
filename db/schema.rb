@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_06_210000) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -112,7 +112,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_210000) do
   create_table "license_change_logs", force: :cascade do |t|
     t.bigint "organization_id", null: false
     t.bigint "changed_by_id"
-    t.jsonb "changes", default: {}, null: false
+    t.jsonb "change_data", default: {}, null: false
     t.text "notes"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -216,7 +216,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_210000) do
     t.string "registration_ip"
     t.decimal "locked_price_monthly", precision: 10, scale: 2
     t.decimal "locked_price_monthly_usd", precision: 10, scale: 2
+    t.integer "max_doctors_override"
+    t.integer "max_patients_override"
+    t.bigint "salesperson_id"
     t.index ["email"], name: "index_organizations_on_email", unique: true
+    t.index ["salesperson_id"], name: "index_organizations_on_salesperson_id"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
     t.index ["subdomain"], name: "index_organizations_on_subdomain", unique: true
   end
@@ -318,6 +322,31 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_210000) do
     t.index ["token_digest"], name: "index_refresh_tokens_on_token_digest", unique: true
     t.index ["user_id", "revoked_at"], name: "index_refresh_tokens_on_user_id_and_revoked_at"
     t.index ["user_id"], name: "index_refresh_tokens_on_user_id"
+  end
+
+  create_table "salesperson_payments", force: :cascade do |t|
+    t.bigint "salesperson_id", null: false
+    t.date "period", null: false
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.datetime "paid_at"
+    t.bigint "paid_by_id"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["paid_by_id"], name: "index_salesperson_payments_on_paid_by_id"
+    t.index ["salesperson_id", "period"], name: "index_salesperson_payments_on_salesperson_id_and_period", unique: true
+    t.index ["salesperson_id"], name: "index_salesperson_payments_on_salesperson_id"
+  end
+
+  create_table "salespersons", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "email"
+    t.string "phone"
+    t.decimal "commission_rate", precision: 5, scale: 2
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.jsonb "commission_by_plan", default: {}, null: false
   end
 
   create_table "schedule_blocks", force: :cascade do |t|
@@ -550,10 +579,13 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_210000) do
   add_foreign_key "billing_records", "users", column: "recorded_by_id"
   add_foreign_key "license_change_logs", "organizations"
   add_foreign_key "license_change_logs", "users", column: "changed_by_id"
+  add_foreign_key "organizations", "salespersons"
   add_foreign_key "payments", "appointments"
   add_foreign_key "payments", "users", column: "recorded_by_id"
   add_foreign_key "products", "organizations"
   add_foreign_key "refresh_tokens", "users"
+  add_foreign_key "salesperson_payments", "salespersons"
+  add_foreign_key "salesperson_payments", "users", column: "paid_by_id"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

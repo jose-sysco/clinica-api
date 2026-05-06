@@ -33,8 +33,8 @@ module Api
           org = Organization.find(params[:id])
 
           # Snapshot of fields before the update for the audit log
-          tracked_fields = %i[plan status trial_ends_at suspended_at locked_price_monthly locked_price_monthly_usd]
-          before_snapshot = tracked_fields.index_with { |f| org.public_send(f)&.to_s }
+          tracked_fields = %i[plan status trial_ends_at suspended_at locked_price_monthly locked_price_monthly_usd max_doctors_override max_patients_override salesperson_id]
+          before_snapshot = tracked_fields.index_with { |f| org.public_send(f).to_s }
 
           updates = {}
           updates[:plan]          = params[:plan]          if params[:plan].present?
@@ -55,6 +55,19 @@ module Api
             updates[:locked_price_monthly_usd] = params[:locked_price_monthly_usd]
           end
 
+          # Límites de capacidad personalizados (null = limpiar override, usa plan)
+          if params.key?(:max_doctors_override)
+            updates[:max_doctors_override] = params[:max_doctors_override].presence
+          end
+          if params.key?(:max_patients_override)
+            updates[:max_patients_override] = params[:max_patients_override].presence
+          end
+
+          # Vendedor asignado
+          if params.key?(:salesperson_id)
+            updates[:salesperson_id] = params[:salesperson_id].presence
+          end
+
           # Si cambia de plan y no se especificó precio personalizado,
           # actualizar locked_price al precio vigente del nuevo plan.
           if params[:plan].present? && params[:locked_price_monthly].blank?
@@ -68,19 +81,21 @@ module Api
           org.update!(updates)
 
           # Build diff for audit log
-          after_snapshot = tracked_fields.index_with { |f| org.public_send(f)&.to_s }
+          after_snapshot = tracked_fields.index_with { |f| org.public_send(f).to_s }
           diff = tracked_fields.each_with_object({}) do |field, h|
             next if before_snapshot[field] == after_snapshot[field]
 
             h[field] = { from: before_snapshot[field], to: after_snapshot[field] }
           end
 
-          LicenseChangeLog.create!(
-            organization: org,
-            changed_by:   current_user,
-            changes:      diff,
-            notes:        params[:notes].presence
-          )
+          if diff.any? || params[:notes].present?
+            LicenseChangeLog.create!(
+              organization: org,
+              changed_by:   current_user,
+              change_data:  diff,
+              notes:        params[:notes].presence
+            )
+          end
 
           render json: org_detail_json(org)
         end
@@ -144,7 +159,13 @@ module Api
           plan_price_monthly:        plan_config&.price_monthly,
           plan_price_monthly_usd:    plan_config&.price_monthly_usd,
           has_custom_price:          org.locked_price_monthly.present? &&
-                                       org.locked_price_monthly != plan_config&.price_monthly
+                                       org.locked_price_monthly != plan_config&.price_monthly,
+          max_doctors_override:      org.max_doctors_override,
+          max_patients_override:     org.max_patients_override,
+          effective_max_doctors:     org.effective_max_doctors,
+          effective_max_patients:    org.effective_max_patients,
+          salesperson_id:            org.salesperson_id,
+          salesperson:               org.salesperson ? { id: org.salesperson.id, name: org.salesperson.name, commission_for_plan: org.salesperson.commission_for_plan(org.plan), commission_by_plan: org.salesperson.commission_by_plan } : nil
         }
       end
 
@@ -165,7 +186,7 @@ module Api
       def license_log_json(log)
         {
           id:         log.id,
-          changes:    log.changes,
+          changes:    log.change_data,
           notes:      log.notes,
           changed_by: log.changed_by&.full_name || "Sistema",
           created_at: log.created_at

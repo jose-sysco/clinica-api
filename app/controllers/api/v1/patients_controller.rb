@@ -64,12 +64,14 @@ module Api
       end
 
       def check_patient_limit
-        config = PlanConfiguration.find_by(plan: ActsAsTenant.current_tenant.plan)
-        return unless config&.max_patients
+        org        = ActsAsTenant.current_tenant
+        max_patients = org.effective_max_patients
+        return unless max_patients
 
-        if Patient.active.count >= config.max_patients
+        if Patient.active.count >= max_patients
+          config = PlanConfiguration.find_by(plan: org.plan)
           render json: {
-            error: "Has alcanzado el límite de #{config.max_patients} pacientes para tu plan #{config.display_name}. Actualiza tu plan para agregar más.",
+            error: "Has alcanzado el límite de #{max_patients} pacientes para tu plan #{config&.display_name}. Actualiza tu plan para agregar más.",
             code:  "patient_limit_reached"
           }, status: :forbidden
         end

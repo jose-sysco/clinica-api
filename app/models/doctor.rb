@@ -48,9 +48,19 @@ class Doctor < ApplicationRecord
   private
 
   def within_doctor_limit
-    return if organization.enabled_features.include?("multi_doctor")
-    if organization.doctors.active.count >= 1
-      errors.add(:base, "Tu plan solo permite 1 doctor activo. Actualiza tu suscripción para agregar más.")
+    features   = organization.enabled_features
+    max_doctors = organization.effective_max_doctors
+
+    if features.include?("multi_doctor")
+      # Con multi_doctor habilitado, respetar el límite numérico si existe
+      return unless max_doctors
+      if organization.doctors.active.count >= max_doctors
+        errors.add(:base, "Has alcanzado el límite de #{max_doctors} profesionales para tu plan. Contacta a soporte para ampliar tu suscripción.")
+      end
+    else
+      if organization.doctors.active.count >= 1
+        errors.add(:base, "Tu plan solo permite 1 doctor activo. Actualiza tu suscripción para agregar más.")
+      end
     end
   end
 

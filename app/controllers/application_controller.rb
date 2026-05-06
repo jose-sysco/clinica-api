@@ -116,8 +116,8 @@ class ApplicationController < ActionController::API
     config = PlanConfiguration.find_by(plan: org.plan)
     {
       plan_display_name:      config&.display_name || org.plan.to_s.capitalize,
-      plan_max_doctors:       config&.max_doctors,
-      plan_max_patients:      config&.max_patients,
+      plan_max_doctors:       org.effective_max_doctors,
+      plan_max_patients:      org.effective_max_patients,
       plan_price_monthly:     config&.price_monthly,
       plan_price_monthly_usd: config&.price_monthly_usd,
       doctors_used:           Doctor.where(organization_id: org.id, status: 0).count,
