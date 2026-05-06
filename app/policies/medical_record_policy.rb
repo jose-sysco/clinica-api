@@ -3,6 +3,10 @@ class MedicalRecordPolicy < ApplicationPolicy
     admin? || receptionist? || doctor?
   end
 
+  def patient_records?
+    admin? || receptionist? || doctor?
+  end
+
   def show?
     admin? || receptionist? || doctor?
   end

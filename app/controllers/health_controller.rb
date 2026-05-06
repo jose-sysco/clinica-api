@@ -1,9 +1,8 @@
 class HealthController < ActionController::Base
   def show
     checks = {
-      database: check_database,
-      redis:    check_redis,
-      sidekiq:  check_sidekiq
+      database:    check_database,
+      solid_queue: check_solid_queue
     }
 
     status = checks.values.all? { |c| c[:ok] } ? :ok : :service_unavailable
@@ -33,17 +32,11 @@ class HealthController < ActionController::Base
     { ok: false, error: e.message }
   end
 
-  def check_redis
-    # Reutiliza el connection pool de Sidekiq en lugar de abrir una conexión nueva.
-    Sidekiq.redis { |conn| conn.call("PING") }
-    { ok: true }
-  rescue => e
-    { ok: false, error: e.message }
-  end
-
-  def check_sidekiq
-    stats = Sidekiq::Stats.new
-    { ok: true, queued: stats.enqueued, failed: stats.failed }
+  def check_solid_queue
+    pending   = SolidQueue::Job.where(finished_at: nil).count
+    scheduled = SolidQueue::ScheduledExecution.count
+    failed    = SolidQueue::FailedExecution.count
+    { ok: true, pending: pending, scheduled: scheduled, failed: failed }
   rescue => e
     { ok: false, error: e.message }
   end

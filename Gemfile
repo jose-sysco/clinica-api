@@ -65,8 +65,7 @@ gem "acts_as_tenant"
 gem "pundit"
 
 # Background jobs
-gem "sidekiq"
-gem "redis"
+gem "solid_queue"
 
 # Email via Resend HTTP API
 gem "resend"

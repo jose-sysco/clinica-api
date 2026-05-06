@@ -29,8 +29,7 @@ module ClinicaApi
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
 
-    # Configurar Sidekiq como adaptador de Active Job
-    config.active_job.queue_adapter = :sidekiq
+    config.active_job.queue_adapter = :solid_queue
     config.time_zone = "Central America"
   end
 end

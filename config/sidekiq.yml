@@ -1,5 +1,0 @@
-:concurrency: 2
-:poll_interval: 30
-:queues:
-  - default
-  - mailers
