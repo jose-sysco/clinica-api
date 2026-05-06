@@ -112,6 +112,15 @@ Rails.application.routes.draw do
       get "search", to: "search#index"
     end
 
+    namespace :public do
+      resources :clinics, only: [ :index, :show ], param: :slug do
+        member do
+          get  :slots
+          post :book
+        end
+      end
+    end
+
     namespace :superadmin do
       get "dashboard/stats", to: "dashboard#stats"
       resources :organizations, only: [ :index, :show ] do

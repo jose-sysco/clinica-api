@@ -1,0 +1,17 @@
+Hola <%= @owner_name %>,
+
+Tu solicitud de cita ha sido recibida correctamente.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Clínica:  <%= @organization.name %>
+Doctor:   <%= @doctor.full_name %> — <%= @doctor.specialty %>
+Fecha:    <%= @appointment.scheduled_at.in_time_zone(@organization.timezone).strftime("%-d de %B de %Y") %>
+Hora:     <%= @appointment.scheduled_at.in_time_zone(@organization.timezone).strftime("%H:%M") %>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Tu solicitud está PENDIENTE DE CONFIRMACIÓN.
+Recibirás otro correo cuando la clínica confirme o rechace tu cita.
+
+Si tienes dudas, comunícate directamente con la clínica.
+
+— Agendia

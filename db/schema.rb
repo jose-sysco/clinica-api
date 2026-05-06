@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_06_280000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -219,6 +219,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
     t.integer "max_doctors_override"
     t.integer "max_patients_override"
     t.bigint "salesperson_id"
+    t.boolean "listed", default: true, null: false
     t.index ["email"], name: "index_organizations_on_email", unique: true
     t.index ["salesperson_id"], name: "index_organizations_on_salesperson_id"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
