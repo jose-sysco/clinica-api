@@ -5,6 +5,7 @@ module Api
         ActsAsTenant.without_tenant do
           now  = Time.current
           orgs = Organization.all
+          plan_configs = PlanConfiguration.all.index_by { |c| c.plan.to_s }
 
           expiring_soon = orgs.trial
             .where("trial_ends_at >= ? AND trial_ends_at <= ?", now, 7.days.from_now)
@@ -26,7 +27,35 @@ module Api
           unpaid_orgs  = paying_orgs.where.not(id: paid_org_ids).order(:name)
             .map { |o| { id: o.id, name: o.name, email: o.email, phone: o.phone, plan: o.plan } }
 
+          # ── MRR ──────────────────────────────────────────────────────────────
+          paying_active = Organization
+            .where(status: :active)
+            .where.not(plan: :trial)
+            .where.not(slug: "sistema-superadmin")
+
+          current_mrr = paying_active.sum do |org|
+            org.locked_price_monthly.presence&.to_f ||
+              plan_configs[org.plan.to_s]&.price_monthly.to_f || 0.0
+          end.round(2)
+
+          # MRR del mes anterior basado en billing records registrados
+          last_month_period = now.last_month.beginning_of_month.to_date
+          last_month_mrr = BillingRecord.where(period: last_month_period).sum(:amount_paid).to_f.round(2)
+
+          mrr_by_plan = paying_active.group_by(&:plan).transform_values do |group|
+            group.sum do |org|
+              org.locked_price_monthly.presence&.to_f ||
+                plan_configs[org.plan.to_s]&.price_monthly.to_f || 0.0
+            end.round(2)
+          end
+
           render json: {
+            mrr: {
+              current:     current_mrr,
+              last_month:  last_month_mrr,
+              by_plan:     mrr_by_plan,
+              paying_orgs: paying_active.count
+            },
             organizations: {
               total:               orgs.count,
               active_subscription: orgs.where.not(plan: :trial).where(status: :active).count,
