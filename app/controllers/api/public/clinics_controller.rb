@@ -21,6 +21,7 @@ module Api
           orgs = Organization
             .where(status: :active, listed: true)
             .where.not(plan: :trial)
+            .where.not(slug: "sistema-superadmin")
             .order(:name)
 
           if params[:q].present?
