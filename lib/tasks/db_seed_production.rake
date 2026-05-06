@@ -27,28 +27,28 @@ namespace :db do
           plan:              :basic,
           name:              "Básico",
           display_name:      "Starter",
-          price_monthly:     450.0,
-          price_monthly_usd: 60.0,
-          max_doctors:       3,
-          max_patients:      200,
+          price_monthly:     350.0,
+          price_monthly_usd: 47.0,
+          max_doctors:       5,
+          max_patients:      500,
           features:          %w[appointments medical_records notifications reports]
         },
         {
           plan:              :professional,
           name:              "Profesional",
           display_name:      "Pro",
-          price_monthly:     825.0,
-          price_monthly_usd: 110.0,
+          price_monthly:     700.0,
+          price_monthly_usd: 93.0,
           max_doctors:       10,
           max_patients:      1000,
-          features:          %w[appointments medical_records notifications reports whatsapp_notifications multi_doctor]
+          features:          %w[appointments medical_records notifications reports multi_doctor inventory]
         },
         {
           plan:              :enterprise,
           name:              "Empresarial",
           display_name:      "Enterprise",
-          price_monthly:     2625.0,
-          price_monthly_usd: 350.0,
+          price_monthly:     1800.0,
+          price_monthly_usd: 240.0,
           max_doctors:       nil,
           max_patients:      nil,
           features:          PlanConfiguration::FEATURES.keys
