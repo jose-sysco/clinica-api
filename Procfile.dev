@@ -1,2 +1,1 @@
-web: bundle exec rails server -p 3010 -e development
-worker: bundle exec sidekiq -c 5
+web: OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES bundle exec rails server -p 3010 -e development

@@ -1,26 +1,6 @@
-require "sidekiq/web"
-
 Rails.application.routes.draw do
   # ── Health check (sin auth — para load balancers y Docker healthcheck) ──────
   get "/health", to: "health#ping"
-
-  # ── Sidekiq Web UI ────────────────────────────────────────────────────────────
-  # Rails API mode no incluye sesiones — se las inyectamos solo a Sidekiq::Web
-  Sidekiq::Web.use ActionDispatch::Session::CookieStore,
-    key:       "_sidekiq_session",
-    secret:    Rails.application.secret_key_base,
-    same_site: :strict,
-    expire_after: 24.hours
-
-  if Rails.env.production?
-    Sidekiq::Web.use(Rack::Auth::Basic) do |username, password|
-      sidekiq_user = ENV.fetch("SIDEKIQ_WEB_USERNAME", "admin")
-      sidekiq_pass = ENV.fetch("SIDEKIQ_WEB_PASSWORD", "")
-      ActiveSupport::SecurityUtils.secure_compare(username, sidekiq_user) &
-        ActiveSupport::SecurityUtils.secure_compare(password, sidekiq_pass)
-    end
-  end
-  mount Sidekiq::Web => "/panel-jobs"
 
   mount Rswag::Ui::Engine => "/api-docs"
   mount Rswag::Api::Engine => "/api-docs"
