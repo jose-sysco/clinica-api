@@ -1,0 +1,14 @@
+Nueva solicitud de cita en <%= @organization.name %>
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Paciente:  <%= @owner_name %>
+Teléfono:  <%= @owner_phone %>
+Doctor:    <%= @doctor.full_name %>
+Fecha:     <%= @appointment.scheduled_at.in_time_zone(@organization.timezone).strftime("%-d de %B de %Y") %>
+Hora:      <%= @appointment.scheduled_at.in_time_zone(@organization.timezone).strftime("%H:%M") %>
+Motivo:    <%= @appointment.reason %>
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Ingresa a tu portal para confirmar o rechazar esta solicitud.
+
+— Agendia

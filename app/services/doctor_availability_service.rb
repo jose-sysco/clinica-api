@@ -1,7 +1,8 @@
 class DoctorAvailabilityService
-  def initialize(doctor, date)
-    @doctor = doctor
-    @date   = date.is_a?(String) ? Date.parse(date) : date
+  def initialize(doctor, date, location_id: nil)
+    @doctor      = doctor
+    @date        = date.is_a?(String) ? Date.parse(date) : date
+    @location_id = location_id
   end
 
   def call
@@ -22,7 +23,13 @@ class DoctorAvailabilityService
   private
 
   def find_schedule
-    @doctor.schedules.active.find_by(day_of_week: @date.wday)
+    if @location_id.present?
+      # Org con sedes: solo buscar horario específico para esa sede, sin fallback global
+      @doctor.schedules.active.find_by(day_of_week: @date.wday, location_id: @location_id)
+    else
+      # Org sin sedes: usar horario global
+      @doctor.schedules.active.find_by(day_of_week: @date.wday, location_id: nil)
+    end
   end
 
   def generate_slots(schedule)
@@ -51,9 +58,16 @@ class DoctorAvailabilityService
   end
 
   def find_blocked_ranges
-    @doctor.schedule_blocks
-           .for_range(@date.beginning_of_day, @date.end_of_day)
-           .pluck(:start_datetime, :end_datetime)
+    scope = @doctor.schedule_blocks.for_range(@date.beginning_of_day, @date.end_of_day)
+
+    # Bloques globales (sin sede) aplican siempre; bloques de sede específica solo en esa sede
+    scope = if @location_id.present?
+      scope.where(location_id: [ @location_id, nil ])
+    else
+      scope
+    end
+
+    scope.pluck(:start_datetime, :end_datetime)
   end
 
   def booked?(slot, booked_slots)

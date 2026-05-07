@@ -27,9 +27,12 @@ class Appointment < ApplicationRecord
   belongs_to :organization
   belongs_to :doctor
   belongs_to :patient
-  belongs_to :owner, optional: true
+  belongs_to :owner,    optional: true
+  belongs_to :location, optional: true
 
   has_one  :medical_record
+  has_one  :admission_form, dependent: :destroy
+  has_one  :nps_survey,     dependent: :destroy
   has_many :payments, dependent: :destroy
 
   # Enums
@@ -146,6 +149,8 @@ class Appointment < ApplicationRecord
       # Programar recordatorio 24h antes si la cita es en el futuro
       reminder_time = scheduled_at - 24.hours
       AppointmentReminderJob.set(wait_until: reminder_time).perform_later(id) if reminder_time > Time.current
+    when "completed"
+      NpsSurveyJob.set(wait: 2.hours).perform_later(id)
     when "cancelled"
       AppointmentCancellationJob.perform_later(id)
       WaitlistNotificationJob.perform_later(id)

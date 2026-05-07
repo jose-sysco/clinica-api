@@ -32,7 +32,7 @@ module Api
 
       def block_params
         params.require(:schedule_block).permit(
-          :start_datetime, :end_datetime, :reason
+          :start_datetime, :end_datetime, :reason, :location_id
         )
       end
 
@@ -41,7 +41,9 @@ module Api
           id:             block.id,
           start_datetime: block.start_datetime,
           end_datetime:   block.end_datetime,
-          reason:         block.reason
+          reason:         block.reason,
+          location_id:    block.location_id,
+          location_name:  block.location&.name
         }
       end
     end

@@ -42,7 +42,10 @@ Rails.application.routes.draw do
         get :medical_records, to: "medical_records#patient_records"
       end
 
-      resources :medical_records, only: [ :index, :show, :create, :update ]
+      resources :medical_records, only: [ :index, :show, :create, :update ] do
+        resources :attachments, only: [ :index, :create, :destroy ],
+                  controller: "medical_record_attachments"
+      end
 
       # Appointments
       resources :appointments, only: [ :index, :show, :create, :update ] do
@@ -53,6 +56,7 @@ Rails.application.routes.draw do
           patch :cancel_series
           patch :start
           patch :no_show
+          get   :admission
         end
         resources :payments, only: [ :index, :create ]
       end
@@ -96,6 +100,9 @@ Rails.application.routes.draw do
         end
       end
 
+      # Sedes / ubicaciones
+      resources :locations, only: [ :index, :show, :create, :update, :destroy ]
+
       # Waitlist
       resources :waitlist_entries, only: [ :index, :create, :update, :destroy ]
 
@@ -112,13 +119,26 @@ Rails.application.routes.draw do
       get "search", to: "search#index"
     end
 
+    namespace :public do
+      resources :clinics, only: [ :index, :show ], param: :slug do
+        member do
+          get  :slots
+          post :book
+        end
+      end
+      resources :admissions, only: [ :show, :update ], param: :token
+      resources :nps,        only: [ :show, :update ], param: :token
+    end
+
     namespace :superadmin do
       get "dashboard/stats", to: "dashboard#stats"
-      resources :organizations, only: [ :index, :show ] do
+      resources :organizations, only: [ :index, :show, :create ] do
         member do
           patch :update_license
           get   :license_logs
           get   :billing_history
+          post  :impersonate
+          get   :export_backup
         end
       end
       resources :users, only: [ :index, :create, :update ] do

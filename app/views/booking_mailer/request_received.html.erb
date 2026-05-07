@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f1f5f9; margin: 0; padding: 40px 20px;">
+
+  <div style="max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%); padding: 32px 40px;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 20px; font-weight: 600;">
+        <%= @organization.name %>
+      </h1>
+      <p style="color: #bfdbfe; margin: 8px 0 0 0; font-size: 14px;">
+        Solicitud de cita recibida
+      </p>
+    </div>
+
+    <!-- Contenido -->
+    <div style="padding: 40px;">
+      <h2 style="color: #0f172a; margin-top: 0; font-size: 22px;">
+        ¡Tu solicitud fue recibida!
+      </h2>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+        Hola <strong style="color: #0f172a;"><%= @owner_name %></strong>,
+      </p>
+
+      <p style="color: #475569; font-size: 15px; line-height: 1.6;">
+        Tu solicitud de cita en <strong style="color: #0f172a;"><%= @organization.name %></strong>
+        ha sido recibida correctamente. Te notificaremos por correo cuando la clínica la confirme.
+      </p>
+
+      <!-- Card detalles -->
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 24px 0;">
+        <p style="margin: 0 0 12px 0; font-size: 13px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;">
+          Detalles de la solicitud
+        </p>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Profesional:</strong>
+          <%= @doctor.full_name %><% if @doctor.specialty.present? %> &mdash; <%= @doctor.specialty %><% end %>
+        </p>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Fecha:</strong>
+          <%= @appointment.scheduled_at.in_time_zone(@organization.timezone).strftime("%-d de %B de %Y") %>
+        </p>
+        <p style="margin: 0 0 8px 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Hora:</strong>
+          <%= @appointment.scheduled_at.in_time_zone(@organization.timezone).strftime("%H:%M") %>
+        </p>
+        <p style="margin: 0; font-size: 14px; color: #475569;">
+          <strong style="color: #0f172a;">Motivo:</strong> <%= @appointment.reason %>
+        </p>
+      </div>
+
+      <!-- Nota pendiente -->
+      <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px; margin-top: 24px;">
+        <p style="margin: 0; font-size: 13px; color: #1e40af;">
+          Tu solicitud está <strong>pendiente de confirmación</strong>.
+          Recibirás otro correo cuando la clínica confirme tu cita.
+          Si tienes dudas, comunícate directamente con la clínica.
+        </p>
+      </div>
+
+      <% if @admission_url.present? %>
+      <!-- Formulario de admisión -->
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 20px; margin-top: 24px;">
+        <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #15803d;">
+          Completa tu formulario de admisión
+        </p>
+        <p style="margin: 0 0 16px 0; font-size: 13px; color: #166534; line-height: 1.5;">
+          Para agilizar tu consulta, completa este breve formulario antes de llegar.
+          Solo toma unos minutos y ayuda al profesional a atenderte mejor.
+        </p>
+        <a href="<%= @admission_url %>"
+          style="display: inline-block; background: #16a34a; color: #ffffff; font-size: 13px; font-weight: 700;
+                 padding: 10px 20px; border-radius: 8px; text-decoration: none;">
+          Llenar formulario →
+        </a>
+      </div>
+      <% end %>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 24px 40px;">
+      <p style="margin: 0; font-size: 13px; color: #94a3b8; text-align: center;">
+        Este email fue enviado por <strong style="color: #64748b;"><%= @organization.name %></strong>
+        a través de <strong style="color: #64748b;">Agendia</strong>
+      </p>
+    </div>
+
+  </div>
+
+</body>
+</html>

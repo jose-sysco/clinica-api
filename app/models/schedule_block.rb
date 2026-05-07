@@ -18,6 +18,7 @@ class ScheduleBlock < ApplicationRecord
   # Asociaciones
   belongs_to :organization
   belongs_to :doctor
+  belongs_to :location, optional: true
 
   # Validaciones
   validates :start_datetime, presence: true

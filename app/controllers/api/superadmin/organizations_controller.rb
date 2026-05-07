@@ -28,6 +28,94 @@ module Api
         end
       end
 
+      def create
+        ActsAsTenant.without_tenant do
+          org = nil
+          ActiveRecord::Base.transaction do
+            org = Organization.new(org_create_params)
+            org.save!
+
+            admin_email = params.dig(:admin, :email).presence || org.email
+            admin = User.new(
+              first_name:            params.dig(:admin, :first_name),
+              last_name:             params.dig(:admin, :last_name),
+              email:                 admin_email,
+              password:              params.dig(:admin, :password),
+              password_confirmation: params.dig(:admin, :password),
+              organization:          org,
+              role:                  :admin,
+              status:                :active,
+              email_verified_at:     Time.current
+            )
+            admin.save!
+          end
+          render json: org_detail_json(org), status: :created
+        end
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+      end
+
+      def export_backup
+        require "zip"
+        require "csv"
+
+        ActsAsTenant.without_tenant do
+          org = Organization.find(params[:id])
+          tz  = org.timezone
+
+          zip_data = ActsAsTenant.with_tenant(org) do
+            buffer = Zip::OutputStream.write_buffer do |zip|
+              zip.put_next_entry("pacientes.csv")
+              zip.write(patients_csv(tz))
+
+              zip.put_next_entry("citas.csv")
+              zip.write(appointments_csv(tz))
+
+              zip.put_next_entry("expedientes.csv")
+              zip.write(medical_records_csv(tz))
+            end
+            buffer.string
+          end
+
+          filename = "backup_#{org.slug}_#{Date.today.strftime('%Y%m%d')}.zip"
+          send_data zip_data, filename: filename, type: "application/zip", disposition: "attachment"
+        end
+      end
+
+      def impersonate
+        ActsAsTenant.without_tenant do
+          org   = Organization.find(params[:id])
+          admin = org.users.find_by(role: :admin, status: :active)
+
+          unless admin
+            render json: { error: "No hay un administrador activo en esta organización" }, status: :unprocessable_entity
+            return
+          end
+
+          jti     = SecureRandom.uuid
+          payload = {
+            sub: admin.id.to_s,
+            jti: jti,
+            exp: 1.hour.from_now.to_i,
+            org: org.id
+          }
+          token = JWT.encode(payload, jwt_secret, "HS256")
+
+          render json: {
+            token:             token,
+            organization_slug: org.slug,
+            organization_name: org.name,
+            organization_id:   org.id,
+            user: {
+              id:        admin.id,
+              full_name: admin.full_name,
+              email:     admin.email,
+              role:      admin.role
+            }
+          }
+        end
+      end
+
       def update_license
         ActsAsTenant.without_tenant do
           org = Organization.find(params[:id])
@@ -126,6 +214,75 @@ module Api
       end
 
       private
+
+      def patients_csv(tz)
+        patients = Patient.includes(:owner).order(:name).all
+        CSV.generate(encoding: "UTF-8") do |csv|
+          csv << %w[id nombre tipo especie raza genero fecha_nacimiento propietario_nombre propietario_email propietario_telefono alergias condiciones_cronicas notas estado creado_en]
+          patients.each do |p|
+            csv << [
+              p.id, p.name, p.patient_type, p.species, p.breed, p.gender,
+              p.birthdate,
+              p.owner&.full_name, p.owner&.email, p.owner&.phone,
+              p.allergies, p.chronic_conditions, p.notes, p.status,
+              p.created_at&.in_time_zone(tz)&.strftime("%Y-%m-%d %H:%M")
+            ]
+          end
+        end
+      end
+
+      def appointments_csv(tz)
+        appts = Appointment.includes(:patient, :location, doctor: :user).order(:scheduled_at).all
+        CSV.generate(encoding: "UTF-8") do |csv|
+          csv << %w[id paciente doctor sede estado tipo fecha_hora motivo notas creado_en]
+          appts.each do |a|
+            csv << [
+              a.id,
+              a.patient.name,
+              a.doctor.full_name,
+              a.location&.name,
+              a.status,
+              a.appointment_type,
+              a.scheduled_at.in_time_zone(tz).strftime("%Y-%m-%d %H:%M"),
+              a.reason,
+              a.notes,
+              a.created_at.in_time_zone(tz).strftime("%Y-%m-%d %H:%M")
+            ]
+          end
+        end
+      end
+
+      def medical_records_csv(tz)
+        records = MedicalRecord.includes(:patient, doctor: :user).order(:created_at).all
+        CSV.generate(encoding: "UTF-8") do |csv|
+          csv << %w[id paciente doctor diagnostico tratamiento medicamentos notas peso_kg temperatura proxima_visita creado_en]
+          records.each do |r|
+            csv << [
+              r.id,
+              r.patient.name,
+              r.doctor.full_name,
+              r.diagnosis,
+              r.treatment,
+              r.medications,
+              r.notes,
+              r.weight,
+              r.temperature,
+              r.next_visit_date,
+              r.created_at.in_time_zone(tz).strftime("%Y-%m-%d %H:%M")
+            ]
+          end
+        end
+      end
+
+      def jwt_secret
+        ENV["DEVISE_JWT_SECRET_KEY"] || Rails.application.credentials.devise_jwt_secret_key
+      end
+
+      def org_create_params
+        params.require(:organization).permit(
+          :name, :email, :phone, :address, :city, :country, :timezone, :clinic_type
+        )
+      end
 
       def org_summary_json(org)
         plan_config = PlanConfiguration.find_by(plan: org.plan)

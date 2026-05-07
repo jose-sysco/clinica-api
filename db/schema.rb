@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_07_210000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -42,6 +42,24 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "admission_forms", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.bigint "appointment_id", null: false
+    t.string "token", null: false
+    t.string "patient_name"
+    t.date "patient_dob"
+    t.text "allergies"
+    t.text "current_medications"
+    t.text "medical_history"
+    t.text "notes"
+    t.datetime "submitted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appointment_id"], name: "index_admission_forms_on_appointment_id", unique: true
+    t.index ["organization_id"], name: "index_admission_forms_on_organization_id"
+    t.index ["token"], name: "index_admission_forms_on_token", unique: true
+  end
+
   create_table "appointments", force: :cascade do |t|
     t.integer "organization_id", null: false
     t.integer "doctor_id", null: false
@@ -61,9 +79,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
     t.string "recurrence_group_id"
     t.integer "recurrence_index"
     t.integer "recurrence_total"
+    t.bigint "location_id"
     t.index ["doctor_id", "scheduled_at", "ends_at"], name: "index_appointments_on_doctor_id_and_scheduled_at_and_ends_at"
     t.index ["doctor_id", "status"], name: "index_appointments_on_doctor_id_and_status"
     t.index ["doctor_id"], name: "index_appointments_on_doctor_id"
+    t.index ["location_id"], name: "index_appointments_on_location_id"
     t.index ["organization_id", "status"], name: "index_appointments_on_organization_id_and_status"
     t.index ["organization_id"], name: "index_appointments_on_organization_id"
     t.index ["owner_id"], name: "index_appointments_on_owner_id"
@@ -83,6 +103,16 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
     t.datetime "updated_at", null: false
     t.index ["organization_id", "period"], name: "index_billing_records_on_organization_id_and_period", unique: true
     t.index ["organization_id"], name: "index_billing_records_on_organization_id"
+  end
+
+  create_table "doctor_locations", force: :cascade do |t|
+    t.bigint "doctor_id", null: false
+    t.bigint "location_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["doctor_id", "location_id"], name: "index_doctor_locations_on_doctor_id_and_location_id", unique: true
+    t.index ["doctor_id"], name: "index_doctor_locations_on_doctor_id"
+    t.index ["location_id"], name: "index_doctor_locations_on_location_id"
   end
 
   create_table "doctors", force: :cascade do |t|
@@ -119,6 +149,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
     t.index ["changed_by_id"], name: "index_license_change_logs_on_changed_by_id"
     t.index ["created_at"], name: "index_license_change_logs_on_created_at"
     t.index ["organization_id"], name: "index_license_change_logs_on_organization_id"
+  end
+
+  create_table "locations", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "name", null: false
+    t.string "address"
+    t.string "city"
+    t.string "phone"
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_locations_on_organization_id"
   end
 
   create_table "medical_records", force: :cascade do |t|
@@ -194,6 +236,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
+  create_table "nps_surveys", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "appointment_id", null: false
+    t.string "token", null: false
+    t.integer "score"
+    t.text "comment"
+    t.datetime "submitted_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["appointment_id"], name: "index_nps_surveys_on_appointment_id", unique: true
+    t.index ["organization_id"], name: "index_nps_surveys_on_organization_id"
+    t.index ["token"], name: "index_nps_surveys_on_token", unique: true
+  end
+
   create_table "organizations", force: :cascade do |t|
     t.string "name", null: false
     t.string "slug", null: false
@@ -219,6 +275,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
     t.integer "max_doctors_override"
     t.integer "max_patients_override"
     t.bigint "salesperson_id"
+    t.boolean "listed", default: true, null: false
     t.index ["email"], name: "index_organizations_on_email", unique: true
     t.index ["salesperson_id"], name: "index_organizations_on_salesperson_id"
     t.index ["slug"], name: "index_organizations_on_slug", unique: true
@@ -357,8 +414,10 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
     t.string "reason"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "location_id"
     t.index ["doctor_id", "start_datetime", "end_datetime"], name: "idx_on_doctor_id_start_datetime_end_datetime_68e6e69f4c"
     t.index ["doctor_id"], name: "index_schedule_blocks_on_doctor_id"
+    t.index ["location_id"], name: "index_schedule_blocks_on_location_id"
     t.index ["organization_id"], name: "index_schedule_blocks_on_organization_id"
   end
 
@@ -371,8 +430,11 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
     t.boolean "is_active", default: true, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["doctor_id", "day_of_week"], name: "index_schedules_on_doctor_id_and_day_of_week", unique: true
+    t.bigint "location_id"
+    t.index ["doctor_id", "day_of_week", "location_id"], name: "idx_schedules_location_unique_per_day", unique: true, where: "(location_id IS NOT NULL)"
+    t.index ["doctor_id", "day_of_week"], name: "idx_schedules_global_unique_per_day", unique: true, where: "(location_id IS NULL)"
     t.index ["doctor_id"], name: "index_schedules_on_doctor_id"
+    t.index ["location_id"], name: "index_schedules_on_location_id"
     t.index ["organization_id"], name: "index_schedules_on_organization_id"
   end
 
@@ -575,10 +637,17 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "admission_forms", "appointments"
+  add_foreign_key "appointments", "locations"
   add_foreign_key "billing_records", "organizations"
   add_foreign_key "billing_records", "users", column: "recorded_by_id"
+  add_foreign_key "doctor_locations", "doctors"
+  add_foreign_key "doctor_locations", "locations"
   add_foreign_key "license_change_logs", "organizations"
   add_foreign_key "license_change_logs", "users", column: "changed_by_id"
+  add_foreign_key "locations", "organizations"
+  add_foreign_key "nps_surveys", "appointments"
+  add_foreign_key "nps_surveys", "organizations"
   add_foreign_key "organizations", "salespersons"
   add_foreign_key "payments", "appointments"
   add_foreign_key "payments", "users", column: "recorded_by_id"
@@ -586,6 +655,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_06_270000) do
   add_foreign_key "refresh_tokens", "users"
   add_foreign_key "salesperson_payments", "salespersons"
   add_foreign_key "salesperson_payments", "users", column: "paid_by_id"
+  add_foreign_key "schedule_blocks", "locations"
+  add_foreign_key "schedules", "locations"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_failed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

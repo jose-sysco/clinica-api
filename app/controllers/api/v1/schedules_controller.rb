@@ -36,7 +36,7 @@ module Api
 
       def schedule_params
         params.require(:schedule).permit(
-          :day_of_week, :start_time, :end_time, :is_active
+          :day_of_week, :start_time, :end_time, :is_active, :location_id
         )
       end
 

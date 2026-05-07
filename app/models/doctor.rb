@@ -20,11 +20,13 @@ class Doctor < ApplicationRecord
   # Asociaciones
   belongs_to :organization
   belongs_to :user
-  has_many   :schedules,       dependent: :destroy
-  has_many   :schedule_blocks, dependent: :destroy
-  has_many   :appointments,    dependent: :destroy
-  has_many :medical_records
-  has_many :payments, through: :appointments
+  has_many   :doctor_locations, dependent: :destroy
+  has_many   :locations,        through: :doctor_locations
+  has_many   :schedules,        dependent: :destroy
+  has_many   :schedule_blocks,  dependent: :destroy
+  has_many   :appointments,     dependent: :destroy
+  has_many   :medical_records
+  has_many   :payments, through: :appointments
 
   # Enums
   enum :status, { active: 0, inactive: 1, on_leave: 2 }
