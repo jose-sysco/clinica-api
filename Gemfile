@@ -79,6 +79,13 @@ gem "rack-cors"
 # Generación de ZIP para exportación de datos
 gem "rubyzip"
 
+# Generación de PDFs (recetas electrónicas)
+gem "prawn", "~> 2.5"
+gem "prawn-table"
+
+# Códigos QR
+gem "rqrcode"
+
 # Rate limiting
 gem "rack-attack"
 
