@@ -132,11 +132,13 @@ Rails.application.routes.draw do
 
     namespace :superadmin do
       get "dashboard/stats", to: "dashboard#stats"
-      resources :organizations, only: [ :index, :show ] do
+      resources :organizations, only: [ :index, :show, :create ] do
         member do
           patch :update_license
           get   :license_logs
           get   :billing_history
+          post  :impersonate
+          get   :export_backup
         end
       end
       resources :users, only: [ :index, :create, :update ] do

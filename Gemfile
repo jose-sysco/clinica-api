@@ -76,6 +76,9 @@ gem "pagy", "~> 9.0"
 # CORS
 gem "rack-cors"
 
+# Generación de ZIP para exportación de datos
+gem "rubyzip"
+
 # Rate limiting
 gem "rack-attack"
 
