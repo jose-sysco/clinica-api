@@ -32,29 +32,41 @@ module Api
       def create
         authorize Doctor, policy_class: DoctorPolicy
 
+        email = params.dig(:user, :email).to_s.strip.downcase
+
+        # Reactivar si ya existe un doctor inactivo con ese email
+        if email.present?
+          existing_user = User.find_by(email: email)
+          if existing_user&.doctor&.inactive?
+            return reactivate_doctor(existing_user.doctor)
+          elsif existing_user&.doctor&.active?
+            return render json: { errors: [ "Ya existe un especialista activo con ese correo electrónico." ] }, status: :unprocessable_entity
+          end
+        end
+
         doctor = nil
         ActiveRecord::Base.transaction do
-          # Crear usuario con rol doctor
           user = User.new(user_params_for_doctor)
-          user.organization    = ActsAsTenant.current_tenant
-          user.role            = :doctor
-          user.status          = :active
-          user.email_verified_at = Time.current  # creado por admin: pre-verificado
+          user.organization      = ActsAsTenant.current_tenant
+          user.role              = :doctor
+          user.status            = :active
+          user.email_verified_at = Time.current
           user.save!
 
-          # Crear doctor asociado al usuario
           doctor = Doctor.new(doctor_params)
           doctor.user         = user
           doctor.organization = ActsAsTenant.current_tenant
           doctor.save!
 
-          # Crear horarios si se enviaron
+          sync_doctor_locations(doctor)
+
           Array(params[:schedules]).each do |s|
             doctor.schedules.create!(
               day_of_week: s[:day_of_week],
               start_time:  s[:start_time],
               end_time:    s[:end_time],
-              is_active:   true
+              is_active:   true,
+              location_id: s[:location_id].presence
             )
           end
         end
@@ -67,6 +79,7 @@ module Api
       def update
         authorize @doctor, policy_class: DoctorPolicy
         @doctor.update!(doctor_params)
+        sync_doctor_locations(@doctor)
         render json: doctor_json(@doctor)
       end
 
@@ -157,6 +170,45 @@ module Api
 
       private
 
+      def reactivate_doctor(doctor)
+        ActiveRecord::Base.transaction do
+          # Actualizar datos del usuario
+          u_params = params[:user] || {}
+          doctor.user.update!(
+            first_name:        u_params[:first_name] || doctor.user.first_name,
+            last_name:         u_params[:last_name]  || doctor.user.last_name,
+            phone:             u_params[:phone]       || doctor.user.phone,
+            status:            :active
+          )
+          if u_params[:password].present?
+            doctor.user.update!(
+              password:              u_params[:password],
+              password_confirmation: u_params[:password_confirmation]
+            )
+          end
+
+          # Reactivar doctor con nuevos datos profesionales
+          doctor.update!(doctor_params.merge(status: :active))
+          sync_doctor_locations(doctor)
+
+          # Reemplazar horarios: limpiar y recrear
+          doctor.schedules.destroy_all
+          Array(params[:schedules]).each do |s|
+            doctor.schedules.create!(
+              day_of_week: s[:day_of_week],
+              start_time:  s[:start_time],
+              end_time:    s[:end_time],
+              is_active:   true,
+              location_id: s[:location_id].presence
+            )
+          end
+        end
+
+        render json: doctor_json(doctor).merge(reactivated: true), status: :ok
+      rescue ActiveRecord::RecordInvalid => e
+        render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
+      end
+
       def set_doctor
         @doctor = Doctor.find(params[:id])
       end
@@ -170,6 +222,17 @@ module Api
             error: "Has alcanzado el límite de #{config.max_doctors} doctor(es) para tu plan #{config.display_name}. Actualiza tu plan para agregar más.",
             code:  "doctor_limit_reached"
           }, status: :forbidden
+        end
+      end
+
+      def sync_doctor_locations(doctor)
+        return unless params[:doctor].key?(:location_ids)
+        ids = Array(params[:doctor][:location_ids]).map(&:to_i).uniq
+        current = doctor.doctor_locations.pluck(:location_id)
+        (current - ids).each { |lid| doctor.doctor_locations.find_by(location_id: lid)&.destroy }
+        (ids - current).each do |lid|
+          loc = Location.find_by(id: lid)
+          doctor.doctor_locations.create!(location: loc) if loc
         end
       end
 
@@ -213,6 +276,8 @@ module Api
           status:                doctor.status,
           inventory_movements:   doctor.inventory_movements,
           schedules:             doctor.schedules.map { |s| schedule_json(s) },
+          locations:             doctor.locations.map { |l| { id: l.id, name: l.name } },
+          location_ids:          doctor.location_ids,
           appointments_today:    base_scope.where(scheduled_at: today.beginning_of_day..today.end_of_day).count,
           appointments_this_week: base_scope.where(scheduled_at: week_start.beginning_of_day..week_end.end_of_day).count,
           next_appointment:      next_appt ? {
@@ -228,7 +293,8 @@ module Api
           day_of_week: schedule.day_of_week,
           start_time:  schedule.start_time.strftime("%H:%M"),
           end_time:    schedule.end_time.strftime("%H:%M"),
-          is_active:   schedule.is_active
+          is_active:   schedule.is_active,
+          location_id: schedule.location_id
         }
       end
     end

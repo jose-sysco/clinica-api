@@ -29,6 +29,7 @@ class Organization < ApplicationRecord
 
   # Multitenant
   has_many :users,           dependent: :destroy
+  has_many :locations,       dependent: :destroy
   has_many :doctors,         dependent: :destroy
   has_many :schedules,       dependent: :destroy
   has_many :schedule_blocks, dependent: :destroy
@@ -60,7 +61,21 @@ class Organization < ApplicationRecord
   before_create     :set_trial_period
   before_create     :lock_plan_price
 
+  TRIAL_APPOINTMENTS_LIMIT = 30
+
   # --- Helpers de licencia ---
+
+  def trial_appointments_used
+    ActsAsTenant.with_tenant(self) { Appointment.where.not(status: :cancelled).count }
+  end
+
+  def trial_appointments_remaining
+    [TRIAL_APPOINTMENTS_LIMIT - trial_appointments_used, 0].max
+  end
+
+  def trial_appointments_limit_reached?
+    trial? && trial_appointments_used >= TRIAL_APPOINTMENTS_LIMIT
+  end
 
   def expiring_soon?(days = 7)
     trial? && trial_ends_at.present? && trial_ends_at.between?(Time.current, days.days.from_now)

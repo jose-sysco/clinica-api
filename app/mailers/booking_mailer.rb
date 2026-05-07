@@ -1,10 +1,11 @@
 class BookingMailer < ApplicationMailer
   # Al paciente: "Tu solicitud fue recibida, espera confirmación"
-  def request_received(appointment, owner_email, owner_name)
-    @appointment  = appointment
-    @doctor       = appointment.doctor
-    @organization = appointment.organization
-    @owner_name   = owner_name
+  def request_received(appointment, owner_email, owner_name, admission_url = nil)
+    @appointment   = appointment
+    @doctor        = appointment.doctor
+    @organization  = appointment.organization
+    @owner_name    = owner_name
+    @admission_url = admission_url
 
     mail(
       to:      owner_email,

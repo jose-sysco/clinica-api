@@ -38,4 +38,8 @@ class AppointmentPolicy < ApplicationPolicy
   def cancel_series?
     admin? || receptionist? || doctor?
   end
+
+  def admission?
+    admin? || receptionist? || doctor?
+  end
 end

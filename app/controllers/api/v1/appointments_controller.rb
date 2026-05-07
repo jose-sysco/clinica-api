@@ -1,7 +1,7 @@
 module Api
   module V1
     class AppointmentsController < BaseController
-      before_action :set_appointment, only: [ :show, :update, :cancel, :confirm, :complete, :cancel_series, :no_show, :start ]
+      before_action :set_appointment, only: [ :show, :update, :cancel, :confirm, :complete, :cancel_series, :no_show, :start, :admission ]
 
       def index
         authorize Appointment, policy_class: AppointmentPolicy
@@ -34,6 +34,30 @@ module Api
       def show
         authorize @appointment, policy_class: AppointmentPolicy
         render json: appointment_json(@appointment)
+      end
+
+      # GET /api/v1/appointments/:id/admission
+      def admission
+        authorize @appointment, policy_class: AppointmentPolicy
+        form = @appointment.admission_form
+        unless form
+          render json: { exists: false }
+          return
+        end
+        render json: {
+          exists:      true,
+          submitted:   form.submitted?,
+          token:       form.token,
+          submitted_at: form.submitted_at,
+          form: form.submitted? ? {
+            allergies:           form.allergies,
+            current_medications: form.current_medications,
+            medical_history:     form.medical_history,
+            notes:               form.notes,
+            patient_dob:         form.patient_dob,
+            patient_name:        form.patient_name
+          } : nil
+        }
       end
 
       def create
@@ -170,6 +194,15 @@ module Api
       # ── Single appointment ─────────────────────────────────────────────────
 
       def create_single
+        org = ActsAsTenant.current_tenant
+        if org.trial? && org.trial_appointments_limit_reached?
+          render json: {
+            error: "Alcanzaste el límite de #{Organization::TRIAL_APPOINTMENTS_LIMIT} citas del período de prueba. Activa una suscripción para continuar.",
+            code:  "trial_appointments_limit"
+          }, status: :payment_required
+          return
+        end
+
         appointment = Appointment.new(appointment_params)
         appointment.save!
         schedule_reminder(appointment)
@@ -179,6 +212,25 @@ module Api
       # ── Recurring series ───────────────────────────────────────────────────
 
       def create_recurring_series(recurrence_type, sessions)
+        org = ActsAsTenant.current_tenant
+        if org.trial?
+          remaining = org.trial_appointments_remaining
+          if remaining == 0
+            render json: {
+              error: "Alcanzaste el límite de #{Organization::TRIAL_APPOINTMENTS_LIMIT} citas del período de prueba. Activa una suscripción para continuar.",
+              code:  "trial_appointments_limit"
+            }, status: :payment_required
+            return
+          end
+          if sessions > remaining
+            render json: {
+              error: "Solo te quedan #{remaining} cita(s) disponibles en tu período de prueba (límite: #{Organization::TRIAL_APPOINTMENTS_LIMIT}). Reduce las sesiones o activa una suscripción.",
+              code:  "trial_appointments_limit"
+            }, status: :payment_required
+            return
+          end
+        end
+
         interval_days = case recurrence_type
         when "weekly"    then 7
         when "biweekly"  then 14
@@ -240,7 +292,7 @@ module Api
 
       def appointment_params
         params.require(:appointment).permit(
-          :doctor_id, :patient_id, :owner_id,
+          :doctor_id, :patient_id, :owner_id, :location_id,
           :scheduled_at, :ends_at, :appointment_type,
           :reason, :notes
         )
@@ -273,6 +325,12 @@ module Api
             id:        appointment.owner.id,
             full_name: appointment.owner.full_name,
             phone:     appointment.owner.phone
+          } : nil,
+          location: appointment.location ? {
+            id:      appointment.location.id,
+            name:    appointment.location.name,
+            address: appointment.location.address,
+            city:    appointment.location.city
           } : nil,
           payment_summary: {
             total_paid:       appointment.total_paid,

@@ -16,7 +16,8 @@ module Api
           by_day_of_week:         by_day_of_week,
           by_type:                by_appointment_type,
           appointments_by_period: appointments_by_period,
-          busiest_doctors:        busiest_doctors
+          busiest_doctors:        busiest_doctors,
+          income:                 income_stats
         }
       end
 
@@ -142,6 +143,44 @@ module Api
             .count
             .map { |m, c| { label: m, total: c } }
         end
+      end
+
+      # ── Ingresos del período ───────────────────────────────────────────────
+
+      def income_stats
+        payments = Payment
+          .joins(:appointment)
+          .where(appointments: { scheduled_at: @start_date.beginning_of_day..@end_date.end_of_day })
+
+        total = payments.sum(:amount).to_f
+
+        by_method = Payment::PAYMENT_METHODS.keys.map do |m|
+          { method: m, amount: payments.by_method(m).sum(:amount).to_f }
+        end
+
+        by_doctor = payments
+          .joins(appointment: { doctor: :user })
+          .group(Arel.sql("doctors.id"), Arel.sql("users.first_name"), Arel.sql("users.last_name"))
+          .sum(Arel.sql("payments.amount"))
+          .map { |(_, first, last), amt| { name: "#{first} #{last}", amount: amt.to_f } }
+          .sort_by { |r| -r[:amount] }
+
+        duration = (@end_date - @start_date).to_i + 1
+        by_period = if duration <= 31
+          payments
+            .group(Arel.sql("TO_CHAR(payments.created_at AT TIME ZONE 'UTC', 'YYYY-MM-DD')"))
+            .order(Arel.sql("1 ASC"))
+            .sum(:amount)
+            .map { |d, amt| { label: d, amount: amt.to_f } }
+        else
+          payments
+            .group(Arel.sql("TO_CHAR(payments.created_at AT TIME ZONE 'UTC', 'YYYY-MM')"))
+            .order(Arel.sql("1 ASC"))
+            .sum(:amount)
+            .map { |d, amt| { label: d, amount: amt.to_f } }
+        end
+
+        { total:, by_method:, by_doctor:, by_period: }
       end
 
       # ── Doctores más activos con tasa de completadas ───────────────────────

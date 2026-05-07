@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>¿Cómo fue tu visita?</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(145deg,#0f172a 0%,#1e3a8a 50%,#1d4ed8 100%);border-radius:16px 16px 0 0;padding:32px 32px 28px;">
+              <p style="color:rgba(255,255,255,0.5);font-size:13px;margin:0 0 10px;">
+                <%= @clinic_name %>
+              </p>
+              <h1 style="color:#ffffff;font-size:20px;font-weight:800;margin:0 0 6px;">
+                ¿Cómo fue tu visita?
+              </h1>
+              <p style="color:rgba(255,255,255,0.6);font-size:13px;margin:0;">
+                Con <%= @doctor_name %>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="background-color:#ffffff;padding:32px;border-left:1px solid #e2e8f0;border-right:1px solid #e2e8f0;">
+              <p style="color:#0f172a;font-size:15px;margin:0 0 6px;">
+                Hola, <strong><%= @patient_name %></strong>
+              </p>
+              <p style="color:#64748b;font-size:14px;line-height:1.6;margin:0 0 28px;">
+                Gracias por tu visita. Tu opinión nos ayuda a mejorar. Solo tomará 10 segundos.
+              </p>
+
+              <p style="color:#374151;font-size:13px;font-weight:600;margin:0 0 14px;text-align:center;">
+                ¿Qué tan probable es que recomiendes <%= @clinic_name %>?
+              </p>
+
+              <!-- Rating buttons 1-10 -->
+              <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:8px;">
+                <tr>
+                  <% (1..10).each do |n| %>
+                    <td align="center" style="padding:2px;">
+                      <a href="<%= @survey_url %>?score=<%= n %>"
+                         style="display:inline-block;width:36px;height:36px;line-height:36px;border-radius:8px;text-align:center;font-size:13px;font-weight:700;text-decoration:none;
+                                <%= n <= 6 ? 'background-color:#fef2f2;color:#dc2626;border:1px solid #fecaca;' : n <= 8 ? 'background-color:#fffbeb;color:#d97706;border:1px solid #fde68a;' : 'background-color:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;' %>">
+                        <%= n %>
+                      </a>
+                    </td>
+                  <% end %>
+                </tr>
+              </table>
+
+              <table cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:28px;">
+                <tr>
+                  <td style="font-size:11px;color:#94a3b8;text-align:left;">Poco probable</td>
+                  <td style="font-size:11px;color:#94a3b8;text-align:right;">Muy probable</td>
+                </tr>
+              </table>
+
+              <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">
+                Al hacer clic en un número enviarás tu calificación directamente.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#f8fafc;border:1px solid #e2e8f0;border-top:none;border-radius:0 0 16px 16px;padding:20px 32px;text-align:center;">
+              <p style="color:#cbd5e1;font-size:11px;margin:0;">
+                Este correo fue enviado por <%= @clinic_name %> a través de Agendia.
+                Si no lo esperabas puedes ignorarlo.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

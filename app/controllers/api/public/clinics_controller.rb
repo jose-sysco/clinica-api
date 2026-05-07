@@ -79,7 +79,7 @@ module Api
             return
           end
 
-          slots = DoctorAvailabilityService.new(doctor, date).call
+          slots = DoctorAvailabilityService.new(doctor, date, location_id: params[:location_id].presence).call
 
           render json: {
             date:   date_str,
@@ -130,7 +130,7 @@ module Api
 
           ends_at = scheduled_at + doctor.consultation_duration.minutes
 
-          # Buscar o crear Owner (contacto)
+          # Buscar o crear Owner (contacto) — dedup por teléfono o email
           owner = Owner.find_by(phone: params[:phone])
           owner ||= Owner.find_by(email: params[:email]) if params[:email].present?
 
@@ -143,28 +143,54 @@ module Api
             )
           end
 
+          owner.update!(email: params[:email]) if params[:email].present? && owner.email.blank?
+
+          # Determinar nombre y tipo de paciente
+          p_type = org.clinic_type == "veterinary" ? :animal : :human
+          p_name = params[:patient_name].presence ||
+                   "#{params[:first_name]} #{params[:last_name]}".strip
+
           # Buscar o crear Patient
-          patient = owner.patients.first
-          unless patient
-            patient = Patient.create!(
-              name:         "#{params[:first_name]} #{params[:last_name]}".strip,
-              patient_type: :human,
-              owner:        owner
+          patient = if params[:patient_name].present?
+            owner.patients.find_by(name: p_name) ||
+              Patient.create!(name: p_name, patient_type: p_type, owner: owner)
+          else
+            owner.patients.first ||
+              Patient.create!(name: p_name, patient_type: p_type, owner: owner)
+          end
+
+          # Bloquear si el org trial llegó al límite
+          if org.trial? && org.trial_appointments_limit_reached?
+            render json: { error: "Esta clínica no está aceptando nuevas solicitudes en este momento." }, status: :unprocessable_entity
+            return
+          end
+
+          # Crear cita y formulario de admisión en una transacción atómica
+          appointment = nil
+          admission   = nil
+
+          ActiveRecord::Base.transaction do
+            location = params[:location_id].present? ? Location.find_by(id: params[:location_id]) : nil
+            appointment = Appointment.create!(
+              doctor:       doctor,
+              patient:      patient,
+              owner:        owner,
+              location:     location,
+              scheduled_at: scheduled_at,
+              ends_at:      ends_at,
+              reason:       params[:reason]
+            )
+
+            admission = AdmissionForm.create!(
+              appointment:  appointment,
+              patient_name: p_name
             )
           end
 
-          # Crear cita en estado pending
-          appointment = Appointment.create!(
-            doctor:       doctor,
-            patient:      patient,
-            owner:        owner,
-            scheduled_at: scheduled_at,
-            ends_at:      ends_at,
-            reason:       params[:reason]
-          )
+          owner_name   = "#{params[:first_name]} #{params[:last_name]}".strip
+          admission_url = "#{ENV.fetch('FRONTEND_URL', 'http://localhost:3000')}/reservas/admision/#{admission.token}"
 
           # Notificar a la clínica (admins y recepcionistas)
-          owner_name = "#{params[:first_name]} #{params[:last_name]}".strip
           admin_emails = org.users
                             .where(role: [ :admin, :receptionist ], status: :active)
                             .pluck(:email)
@@ -174,12 +200,13 @@ module Api
 
           # Notificar al paciente si dejó email
           if params[:email].present?
-            BookingMailer.request_received(appointment, params[:email], owner_name).deliver_later
+            BookingMailer.request_received(appointment, params[:email], owner_name, admission_url).deliver_later
           end
 
           render json: {
-            message:      "Solicitud recibida. La clínica confirmará tu cita pronto.",
-            appointment:  {
+            message:        "Solicitud recibida. La clínica confirmará tu cita pronto.",
+            admission_token: admission.token,
+            appointment:    {
               id:           appointment.id,
               scheduled_at: appointment.scheduled_at.in_time_zone(org.timezone).strftime("%-d de %B de %Y a las %H:%M"),
               doctor:       doctor.full_name,
@@ -210,16 +237,19 @@ module Api
       end
 
       def clinic_detail_json(org, doctors)
+        locations = ActsAsTenant.with_tenant(org) { Location.active.order(:name) }
         clinic_summary_json(org).merge(
-          address: org.address,
-          email:   org.email,
-          doctors: doctors.map { |d|
+          address:   org.address,
+          email:     org.email,
+          locations: locations.map { |l| { id: l.id, name: l.name, address: l.address, city: l.city } },
+          doctors:   doctors.map { |d|
             {
-              id:                   d.id,
-              full_name:            d.full_name,
-              specialty:            d.specialty,
-              bio:                  d.bio,
+              id:                    d.id,
+              full_name:             d.full_name,
+              specialty:             d.specialty,
+              bio:                   d.bio,
               consultation_duration: d.consultation_duration,
+              location_ids:          d.location_ids
             }
           }
         )

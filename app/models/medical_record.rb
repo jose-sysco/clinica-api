@@ -26,7 +26,34 @@ class MedicalRecord < ApplicationRecord
   belongs_to :patient
   belongs_to :doctor
 
+  has_many_attached :attachments
+
+  ALLOWED_CONTENT_TYPES = %w[image/jpeg image/png image/webp application/pdf].freeze
+  MAX_ATTACHMENT_SIZE   = 3.megabytes
+  MAX_ATTACHMENTS       = 5
+
   validates :appointment_id, uniqueness: true
+  validate  :validate_attachments
+
+  private
+
+  def validate_attachments
+    return unless attachments.attached?
+
+    if attachments.count > MAX_ATTACHMENTS
+      errors.add(:attachments, "máximo #{MAX_ATTACHMENTS} archivos permitidos")
+      return
+    end
+
+    attachments.each do |file|
+      unless ALLOWED_CONTENT_TYPES.include?(file.content_type)
+        errors.add(:attachments, "solo se permiten imágenes (JPG, PNG, WebP) y PDFs")
+      end
+      if file.byte_size > MAX_ATTACHMENT_SIZE
+        errors.add(:attachments, "#{file.filename} supera el límite de 3 MB")
+      end
+    end
+  end
 
   # Vitales — todos opcionales, solo validación numérica si se proporcionan
   validates :weight,                   numericality: { greater_than: 0 },                             allow_blank: true

@@ -112,15 +112,18 @@ module Api
             clinic_type:          user.organization.clinic_type,
             status:               user.organization.status,
             plan:                 user.organization.plan,
-            trial_ends_at:        user.organization.trial_ends_at,
-            trial_days_remaining: user.organization.trial_days_remaining,
-            trial_expired:        user.organization.trial_expired?,
-            on_trial:             user.organization.trial?,
+            trial_ends_at:             user.organization.trial_ends_at,
+            trial_days_remaining:      user.organization.trial_days_remaining,
+            trial_expired:             user.organization.trial_expired?,
+            on_trial:                  user.organization.trial?,
+            trial_appointments_used:   user.organization.trial? ? user.organization.trial_appointments_used : nil,
+            trial_appointments_limit:  user.organization.trial? ? Organization::TRIAL_APPOINTMENTS_LIMIT : nil,
             features:             user.organization.enabled_features,
             logo_url:             user.organization.logo_file.attached? \
                                     ? rails_blob_url(user.organization.logo_file, host: request.base_url) \
                                     : user.organization.logo,
-            primary_color:        user.organization.primary_color
+            primary_color:        user.organization.primary_color,
+            listed:               user.organization.listed
           }.merge(plan_config_for(user.organization)),
           created_at: user.created_at
         }
