@@ -1,6 +1,7 @@
 module Api
   module V1
     class MedicalRecordAttachmentsController < ApplicationController
+      before_action :require_attachments_feature!, only: [ :create, :destroy ]
       before_action :set_record
 
       # GET /api/v1/medical_records/:medical_record_id/attachments
@@ -59,6 +60,13 @@ module Api
             url:          rails_blob_url(attachment, disposition: "inline", host: request.base_url),
             created_at:   attachment.created_at
           }
+        end
+      end
+
+      def require_attachments_feature!
+        unless ActsAsTenant.current_tenant.enabled_features.include?("attachments")
+          render json: { error: "Los adjuntos en expediente no están disponibles en tu plan actual.", code: "feature_not_available" },
+                 status: :payment_required
         end
       end
     end

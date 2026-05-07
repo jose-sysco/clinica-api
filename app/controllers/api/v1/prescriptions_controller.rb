@@ -1,6 +1,7 @@
 module Api
   module V1
     class PrescriptionsController < BaseController
+      before_action :require_prescriptions_feature!
       before_action :set_prescription, only: [ :show, :update, :revoke, :download ]
 
       # GET /api/v1/prescriptions?patient_id=&medical_record_id=
@@ -106,6 +107,13 @@ module Api
           public_url:        p.public_url("#{request.protocol}#{request.host_with_port}"),
           created_at:        p.created_at
         }
+      end
+
+      def require_prescriptions_feature!
+        unless ActsAsTenant.current_tenant.enabled_features.include?("prescriptions")
+          render json: { error: "Las recetas electrónicas no están disponibles en tu plan actual.", code: "feature_not_available" },
+                 status: :payment_required
+        end
       end
     end
   end
