@@ -60,6 +60,78 @@ module Api
           }, status: :ok
         end
 
+        # POST /api/v1/auth/switch_org
+        # Permite a un usuario con acceso a múltiples orgs cambiar de org sin re-autenticar.
+        # Requiere token válido de la org actual. Verifica que el mismo email sea admin en la org destino.
+        def switch_org
+          # Este action necesita auth — usamos authenticate_user! manualmente
+          # (el controlador tiene skip_before_action para sign_in/sign_up, pero switch_org sí requiere token)
+          unless request.headers["Authorization"].present?
+            render json: { error: "Token requerido" }, status: :unauthorized
+            return
+          end
+
+          # Decodificar token manualmente (igual que ApplicationController)
+          token = request.headers["Authorization"].split(" ").last
+          begin
+            decoded = JWT.decode(token, jwt_secret, true, algorithm: "HS256")
+            payload = decoded.first
+          rescue JWT::DecodeError
+            render json: { error: "Token inválido" }, status: :unauthorized
+            return
+          end
+
+          current_org_user = ActsAsTenant.without_tenant { User.find_by(id: payload["sub"]) }
+          unless current_org_user
+            render json: { error: "Usuario no encontrado" }, status: :unauthorized
+            return
+          end
+
+          target_slug = params[:target_slug].to_s.strip
+          if target_slug.blank?
+            render json: { error: "target_slug es requerido" }, status: :bad_request
+            return
+          end
+
+          target_org = ActsAsTenant.without_tenant { Organization.find_by(slug: target_slug) }
+          unless target_org
+            render json: { error: "Organización no encontrada" }, status: :not_found
+            return
+          end
+
+          # Verificar que el email del usuario actual existe como admin en la org destino
+          target_user = ActsAsTenant.without_tenant do
+            User.find_by(email: current_org_user.email, organization_id: target_org.id)
+          end
+
+          unless target_user
+            render json: { error: "No tienes acceso a esta organización" }, status: :forbidden
+            return
+          end
+
+          if target_org.suspended?
+            render json: { error: "Esa organización está suspendida", code: "license_suspended" },
+                   status: :payment_required
+            return
+          end
+
+          access_token              = generate_jwt(target_user)
+          raw_refresh_token, _record = RefreshToken.generate_for(target_user)
+
+          render json: {
+            token:         access_token,
+            refresh_token: raw_refresh_token,
+            user: {
+              id:        target_user.id,
+              email:     target_user.email,
+              full_name: target_user.full_name,
+              role:      target_user.role,
+              status:    target_user.status
+            },
+            organization: organization_license_json(target_org)
+          }, status: :ok
+        end
+
         # POST /api/v1/auth/refresh
         def refresh
           raw = params[:refresh_token]

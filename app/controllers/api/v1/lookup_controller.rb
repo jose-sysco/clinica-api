@@ -5,8 +5,9 @@ module Api
       skip_before_action :set_tenant
 
       # GET /api/v1/lookup?email=...
-      # Devuelve el slug y nombre de la organización a la que pertenece el email.
-      # Endpoint público — no requiere token ni slug en headers.
+      # Retorna todas las organizaciones a las que pertenece el email.
+      # Si el email existe en una sola org → `organizations` tiene un elemento.
+      # Si existe en varias → el frontend muestra un selector de org.
       def organization
         email = params[:email].to_s.strip.downcase
 
@@ -15,19 +16,29 @@ module Api
           return
         end
 
-        user = ActsAsTenant.without_tenant { User.find_by(email: email) }
+        users = ActsAsTenant.without_tenant { User.includes(:organization).where(email: email) }
 
-        if user.nil?
+        if users.empty?
           render json: { error: "No encontramos una cuenta con ese correo" }, status: :not_found
           return
         end
 
-        org      = user.organization
-        logo_url = org.logo_file.attached? \
-                     ? rails_blob_url(org.logo_file, host: request.base_url) \
-                     : org.logo
+        organizations = users.map do |u|
+          org      = u.organization
+          logo_url = org.logo_file.attached? \
+                       ? rails_blob_url(org.logo_file, host: request.base_url) \
+                       : org.logo
 
-        render json: { slug: org.slug, name: org.name, logo_url: logo_url }
+          {
+            slug:        org.slug,
+            name:        org.name,
+            logo_url:    logo_url,
+            clinic_type: org.clinic_type,
+            plan:        org.plan
+          }
+        end
+
+        render json: { organizations: organizations }
       end
     end
   end

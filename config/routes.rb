@@ -11,6 +11,7 @@ Rails.application.routes.draw do
       post   "auth/sign_in",       to: "auth/sessions#create"
       delete "auth/sign_out",      to: "auth/sessions#destroy"
       post   "auth/refresh",       to: "auth/sessions#refresh"
+      post   "auth/switch_org",   to: "auth/sessions#switch_org"
       post   "auth/sign_up_staff", to: "auth/registrations#create_staff"
       post   "auth/forgot_password",    to: "auth/passwords#forgot"
       post   "auth/reset_password",     to: "auth/passwords#reset"
