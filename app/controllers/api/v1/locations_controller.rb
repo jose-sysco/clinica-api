@@ -1,6 +1,7 @@
 module Api
   module V1
     class LocationsController < ApplicationController
+      before_action :require_multi_location_feature!, only: [ :create, :update, :destroy ]
       before_action :set_location, only: [ :show, :update, :destroy ]
 
       # GET /api/v1/locations
@@ -53,6 +54,13 @@ module Api
 
       def location_params
         params.require(:location).permit(:name, :address, :city, :phone, :active)
+      end
+
+      def require_multi_location_feature!
+        unless ActsAsTenant.current_tenant.enabled_features.include?("multi_location")
+          render json: { error: "Las sedes múltiples no están disponibles en tu plan actual.", code: "feature_not_available" },
+                 status: :payment_required
+        end
       end
 
       def location_json(loc)
