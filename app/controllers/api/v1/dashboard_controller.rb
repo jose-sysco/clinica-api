@@ -83,7 +83,9 @@ module Api
             }
           },
 
-          peak_hours: peak_hours
+          peak_hours: peak_hours,
+
+          nps: nps_summary
         }
       end
 
@@ -169,6 +171,21 @@ module Api
       end
 
       private
+
+      def nps_summary
+        surveys = NpsSurvey.where.not(submitted_at: nil).where(submitted_at: 90.days.ago..Time.current)
+        total   = surveys.count
+        return { average: nil, total: 0, promoters: 0, passives: 0, detractors: 0, score: nil } if total.zero?
+
+        scores     = surveys.pluck(:score)
+        average    = (scores.sum.to_f / total).round(1)
+        promoters  = scores.count { |s| s >= 9 }
+        passives   = scores.count { |s| s == 7 || s == 8 }
+        detractors = scores.count { |s| s <= 6 }
+        nps_score  = (((promoters - detractors).to_f / total) * 100).round
+
+        { average: average, total: total, promoters: promoters, passives: passives, detractors: detractors, score: nps_score }
+      end
 
       # Scope base de citas según rol del usuario autenticado.
       # Doctores ven solo sus citas; admin y recepcionistas ven toda la org.

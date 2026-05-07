@@ -155,6 +155,8 @@ module Api
           end
         end
 
+        NpsSurveyJob.set(wait: 2.hours).perform_later(@appointment.id)
+
         render json: appointment_json(@appointment.reload), status: :ok
       rescue ActiveRecord::RecordInvalid => e
         render json: { errors: e.record.errors.full_messages }, status: :unprocessable_entity
