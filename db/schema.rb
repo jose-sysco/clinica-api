@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_07_210000) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_07_210001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -350,6 +350,27 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_07_210000) do
     t.integer "max_patients", comment: "null = ilimitado"
     t.decimal "price_monthly_usd", precision: 10, scale: 2, default: "0.0"
     t.index ["plan"], name: "index_plan_configurations_on_plan", unique: true
+  end
+
+  create_table "prescriptions", force: :cascade do |t|
+    t.integer "organization_id", null: false
+    t.integer "doctor_id", null: false
+    t.integer "patient_id", null: false
+    t.integer "appointment_id"
+    t.integer "medical_record_id"
+    t.string "verification_token", null: false
+    t.string "status", default: "active", null: false
+    t.jsonb "medications", default: [], null: false
+    t.text "diagnosis"
+    t.text "notes"
+    t.date "issued_at", null: false
+    t.date "valid_until"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["medical_record_id"], name: "index_prescriptions_on_medical_record_id"
+    t.index ["organization_id", "patient_id"], name: "index_prescriptions_on_organization_id_and_patient_id"
+    t.index ["organization_id"], name: "index_prescriptions_on_organization_id"
+    t.index ["verification_token"], name: "index_prescriptions_on_verification_token", unique: true
   end
 
   create_table "products", force: :cascade do |t|

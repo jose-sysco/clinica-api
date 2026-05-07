@@ -47,6 +47,14 @@ Rails.application.routes.draw do
                   controller: "medical_record_attachments"
       end
 
+      # Recetas electrónicas
+      resources :prescriptions, only: [ :index, :show, :create, :update ] do
+        member do
+          patch :revoke
+          get   :download
+        end
+      end
+
       # Appointments
       resources :appointments, only: [ :index, :show, :create, :update ] do
         member do
@@ -127,7 +135,9 @@ Rails.application.routes.draw do
         end
       end
       resources :admissions, only: [ :show, :update ], param: :token
-      resources :nps,        only: [ :show, :update ], param: :token
+      resources :nps,           only: [ :show, :update ], param: :token
+      resources :prescriptions, only: [ :show ],         param: :token,
+                controller: "prescriptions"
     end
 
     namespace :superadmin do
