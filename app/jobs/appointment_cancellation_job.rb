@@ -4,7 +4,11 @@ class AppointmentCancellationJob < ApplicationJob
   def perform(appointment_id)
     appointment = ActsAsTenant.without_tenant { Appointment.find(appointment_id) }
     ActsAsTenant.with_tenant(appointment.organization) do
-      AppointmentMailer.cancellation(appointment).deliver_now
+      begin
+        AppointmentMailer.cancellation(appointment).deliver_now
+      rescue => e
+        Rails.logger.warn "AppointmentCancellationJob mailer failed: #{e.message}"
+      end
       AppointmentNotificationService.notify_cancelled(appointment)
       PushNotificationService.appointment_cancelled(appointment)
     end

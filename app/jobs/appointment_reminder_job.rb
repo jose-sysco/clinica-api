@@ -6,7 +6,11 @@ class AppointmentReminderJob < ApplicationJob
     ActsAsTenant.with_tenant(appointment.organization) do
       return unless appointment.confirmed?
 
-      AppointmentMailer.reminder(appointment).deliver_now
+      begin
+        AppointmentMailer.reminder(appointment).deliver_now
+      rescue => e
+        Rails.logger.warn "AppointmentReminderJob mailer failed: #{e.message}"
+      end
       AppointmentNotificationService.notify_reminder(appointment)
       PushNotificationService.appointment_reminder(appointment)
     end
