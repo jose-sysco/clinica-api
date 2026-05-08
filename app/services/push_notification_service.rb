@@ -63,13 +63,12 @@ class PushNotificationService
            tag:   "appt-reminder-#{appointment.id}")
   end
 
-  # Notify the patient/owner user + all admins in the org
+  # Notify all admins + the doctor's user in the org
   def self.notify_appointment_users(appointment, payload)
-    patient_user = appointment.patient&.user
-    notify(patient_user, payload) if patient_user
-
     ActsAsTenant.with_tenant(appointment.organization) do
-      User.where(role: :admin).each { |admin| notify(admin, payload) }
+      recipients = User.where(role: :admin).to_a
+      recipients << appointment.doctor.user if appointment.doctor&.user
+      recipients.uniq.each { |u| notify(u, payload) }
     end
   end
   private_class_method :notify_appointment_users
