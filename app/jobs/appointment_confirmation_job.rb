@@ -4,7 +4,11 @@ class AppointmentConfirmationJob < ApplicationJob
   def perform(appointment_id)
     appointment = ActsAsTenant.without_tenant { Appointment.find(appointment_id) }
     ActsAsTenant.with_tenant(appointment.organization) do
-      AppointmentMailer.confirmation(appointment).deliver_now
+      begin
+        AppointmentMailer.confirmation(appointment).deliver_now
+      rescue => e
+        Rails.logger.warn "AppointmentConfirmationJob mailer failed: #{e.message}"
+      end
       AppointmentNotificationService.notify_confirmed(appointment)
       PushNotificationService.appointment_confirmed(appointment)
     end
