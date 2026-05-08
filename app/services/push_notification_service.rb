@@ -36,7 +36,7 @@ class PushNotificationService
   def self.appointment_confirmed(appointment)
     notify(appointment.owner || appointment.patient&.user,
            title: "Cita confirmada",
-           body:  "Tu cita con #{appointment.doctor.full_name} el #{format_date(appointment.start_time)} está confirmada.",
+           body:  "Tu cita con #{appointment.doctor.full_name} el #{format_date(appointment.scheduled_at)} está confirmada.",
            url:   "/reservas",
            tag:   "appt-confirmed-#{appointment.id}")
   end
@@ -44,7 +44,7 @@ class PushNotificationService
   def self.appointment_cancelled(appointment)
     notify(appointment.owner || appointment.patient&.user,
            title: "Cita cancelada",
-           body:  "Tu cita con #{appointment.doctor.full_name} el #{format_date(appointment.start_time)} fue cancelada.",
+           body:  "Tu cita con #{appointment.doctor.full_name} el #{format_date(appointment.scheduled_at)} fue cancelada.",
            url:   "/reservas",
            tag:   "appt-cancelled-#{appointment.id}")
   end
@@ -52,7 +52,7 @@ class PushNotificationService
   def self.appointment_reminder(appointment)
     notify(appointment.owner || appointment.patient&.user,
            title: "Recordatorio de cita",
-           body:  "Mañana tienes cita con #{appointment.doctor.full_name} a las #{appointment.start_time.strftime('%H:%M')}.",
+           body:  "Mañana tienes cita con #{appointment.doctor.full_name} a las #{appointment.scheduled_at.strftime('%H:%M')}.",
            url:   "/reservas",
            tag:   "appt-reminder-#{appointment.id}")
   end
