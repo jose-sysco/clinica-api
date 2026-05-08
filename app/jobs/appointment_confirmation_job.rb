@@ -6,6 +6,7 @@ class AppointmentConfirmationJob < ApplicationJob
     ActsAsTenant.with_tenant(appointment.organization) do
       AppointmentMailer.confirmation(appointment).deliver_now
       AppointmentNotificationService.notify_confirmed(appointment)
+      PushNotificationService.appointment_confirmed(appointment)
     end
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn "AppointmentConfirmationJob: Appointment #{appointment_id} not found"

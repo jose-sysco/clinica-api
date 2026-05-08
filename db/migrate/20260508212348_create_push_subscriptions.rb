@@ -1,0 +1,15 @@
+class CreatePushSubscriptions < ActiveRecord::Migration[7.2]
+  def change
+    create_table :push_subscriptions do |t|
+      t.references :organization, null: false, foreign_key: true
+      t.references :user,         null: false, foreign_key: true
+      t.text  :endpoint,   null: false
+      t.text  :p256dh,     null: false
+      t.text  :auth,       null: false
+      t.string :browser
+      t.timestamps
+    end
+
+    add_index :push_subscriptions, :endpoint, unique: true
+  end
+end

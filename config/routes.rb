@@ -126,6 +126,10 @@ Rails.application.routes.draw do
 
       # Search
       get "search", to: "search#index"
+
+      # Push notifications — suscripción del browser
+      post   "push_subscriptions", to: "push_subscriptions#create"
+      delete "push_subscriptions", to: "push_subscriptions#destroy"
     end
 
     namespace :public do
@@ -139,6 +143,7 @@ Rails.application.routes.draw do
       resources :nps,           only: [ :show, :update ], param: :token
       resources :prescriptions, only: [ :show ],         param: :token,
                 controller: "prescriptions"
+      get "vapid_public_key", to: "vapid#public_key"
     end
 
     namespace :superadmin do
