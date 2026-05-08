@@ -2,8 +2,7 @@ module Api
   module Public
     class NpsController < ApplicationController
       skip_before_action :authenticate_user!
-      skip_before_action :find_organization
-      skip_before_action :check_suspension
+      skip_before_action :set_tenant
 
       # GET /api/public/nps/:token
       def show
