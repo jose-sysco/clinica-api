@@ -1,0 +1,10 @@
+class PushSubscription < ApplicationRecord
+  acts_as_tenant :organization
+
+  belongs_to :organization
+  belongs_to :user
+
+  validates :endpoint, presence: true, uniqueness: true
+  validates :p256dh,   presence: true
+  validates :auth,     presence: true
+end

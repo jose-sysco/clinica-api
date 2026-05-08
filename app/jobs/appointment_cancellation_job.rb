@@ -6,6 +6,7 @@ class AppointmentCancellationJob < ApplicationJob
     ActsAsTenant.with_tenant(appointment.organization) do
       AppointmentMailer.cancellation(appointment).deliver_now
       AppointmentNotificationService.notify_cancelled(appointment)
+      PushNotificationService.appointment_cancelled(appointment)
     end
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn "AppointmentCancellationJob: Appointment #{appointment_id} not found"

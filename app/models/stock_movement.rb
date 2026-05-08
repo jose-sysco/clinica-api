@@ -16,6 +16,7 @@ class StockMovement < ApplicationRecord
 
   before_validation :set_stock_snapshot, on: :create
   after_create      :update_product_stock
+  after_create      :push_low_stock_alert
 
   private
 
@@ -34,5 +35,11 @@ class StockMovement < ApplicationRecord
 
   def update_product_stock
     product.update_column(:current_stock, stock_after)
+  end
+
+  def push_low_stock_alert
+    return unless product.reload.low_stock?
+
+    PushNotificationService.low_stock(product)
   end
 end

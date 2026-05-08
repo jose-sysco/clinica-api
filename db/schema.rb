@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_05_07_210001) do
+ActiveRecord::Schema[7.2].define(version: 2026_05_08_212348) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -390,6 +390,20 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_07_210001) do
     t.index ["organization_id"], name: "index_products_on_organization_id"
   end
 
+  create_table "push_subscriptions", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "user_id", null: false
+    t.text "endpoint", null: false
+    t.text "p256dh", null: false
+    t.text "auth", null: false
+    t.string "browser"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["endpoint"], name: "index_push_subscriptions_on_endpoint", unique: true
+    t.index ["organization_id"], name: "index_push_subscriptions_on_organization_id"
+    t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
+  end
+
   create_table "refresh_tokens", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.string "token_digest", null: false
@@ -673,6 +687,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_05_07_210001) do
   add_foreign_key "payments", "appointments"
   add_foreign_key "payments", "users", column: "recorded_by_id"
   add_foreign_key "products", "organizations"
+  add_foreign_key "push_subscriptions", "organizations"
+  add_foreign_key "push_subscriptions", "users"
   add_foreign_key "refresh_tokens", "users"
   add_foreign_key "salesperson_payments", "salespersons"
   add_foreign_key "salesperson_payments", "users", column: "paid_by_id"

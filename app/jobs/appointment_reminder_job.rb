@@ -8,6 +8,7 @@ class AppointmentReminderJob < ApplicationJob
 
       AppointmentMailer.reminder(appointment).deliver_now
       AppointmentNotificationService.notify_reminder(appointment)
+      PushNotificationService.appointment_reminder(appointment)
     end
   rescue ActiveRecord::RecordNotFound
     Rails.logger.warn "AppointmentReminderJob: Appointment #{appointment_id} not found"

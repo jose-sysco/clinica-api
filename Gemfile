@@ -86,6 +86,9 @@ gem "prawn-table"
 # Códigos QR
 gem "rqrcode"
 
+# Notificaciones push (Web Push / VAPID)
+gem "webpush", "~> 1.1"
+
 # Rate limiting
 gem "rack-attack"
 
