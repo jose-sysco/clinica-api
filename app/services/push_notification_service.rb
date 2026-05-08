@@ -9,9 +9,15 @@ class PushNotificationService
   # payload keys: title (required), body, url, tag
   def self.notify(user, payload)
     return unless VAPID_KEYS[:public_key] && VAPID_KEYS[:private_key]
+    return if user.nil?
 
     subscriptions = ActsAsTenant.without_tenant do
       PushSubscription.where(user: user)
+    end
+
+    if subscriptions.empty?
+      Rails.logger.info("[PushNotification] No subscriptions for user #{user.id}")
+      return
     end
 
     message = JSON.generate(payload)
@@ -34,28 +40,39 @@ class PushNotificationService
 
   # Convenience wrappers for appointment events
   def self.appointment_confirmed(appointment)
-    notify(appointment.owner || appointment.patient&.user,
+    notify_appointment_users(appointment,
            title: "Cita confirmada",
-           body:  "Tu cita con #{appointment.doctor.full_name} el #{format_date(appointment.scheduled_at)} está confirmada.",
-           url:   "/reservas",
+           body:  "Cita con #{appointment.doctor.full_name} el #{format_date(appointment.scheduled_at)} confirmada.",
+           url:   "/dashboard/citas",
            tag:   "appt-confirmed-#{appointment.id}")
   end
 
   def self.appointment_cancelled(appointment)
-    notify(appointment.owner || appointment.patient&.user,
+    notify_appointment_users(appointment,
            title: "Cita cancelada",
-           body:  "Tu cita con #{appointment.doctor.full_name} el #{format_date(appointment.scheduled_at)} fue cancelada.",
-           url:   "/reservas",
+           body:  "Cita con #{appointment.doctor.full_name} el #{format_date(appointment.scheduled_at)} fue cancelada.",
+           url:   "/dashboard/citas",
            tag:   "appt-cancelled-#{appointment.id}")
   end
 
   def self.appointment_reminder(appointment)
-    notify(appointment.owner || appointment.patient&.user,
+    notify_appointment_users(appointment,
            title: "Recordatorio de cita",
-           body:  "Mañana tienes cita con #{appointment.doctor.full_name} a las #{appointment.scheduled_at.strftime('%H:%M')}.",
-           url:   "/reservas",
+           body:  "Mañana: cita con #{appointment.doctor.full_name} a las #{appointment.scheduled_at.strftime('%H:%M')}.",
+           url:   "/dashboard/citas",
            tag:   "appt-reminder-#{appointment.id}")
   end
+
+  # Notify the patient/owner user + all admins in the org
+  def self.notify_appointment_users(appointment, payload)
+    patient_user = appointment.patient&.user
+    notify(patient_user, payload) if patient_user
+
+    ActsAsTenant.with_tenant(appointment.organization) do
+      User.where(role: :admin).each { |admin| notify(admin, payload) }
+    end
+  end
+  private_class_method :notify_appointment_users
 
   def self.low_stock(product)
     # Notify all admin users in the org
