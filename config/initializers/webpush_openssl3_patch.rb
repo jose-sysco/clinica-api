@@ -6,6 +6,28 @@ if defined?(Webpush)
     def initialize
       @curve = OpenSSL::PKey::EC.generate("prime256v1")
     end
+
+    # OpenSSL 3.0 made EC keys immutable — cannot call private_key= / public_key=.
+    # Reconstruct the key from DER bytes (RFC 5915 ECPrivateKey) instead.
+    def self.from_keys(public_key, private_key)
+      instance = allocate
+
+      der = OpenSSL::ASN1::Sequence([
+        OpenSSL::ASN1::Integer(OpenSSL::BN.new(1)),
+        OpenSSL::ASN1::OctetString(Webpush.decode64(private_key)),
+        OpenSSL::ASN1::ASN1Data.new(
+          [OpenSSL::ASN1::ObjectId("prime256v1")],
+          0, :CONTEXT_SPECIFIC
+        ),
+        OpenSSL::ASN1::ASN1Data.new(
+          [OpenSSL::ASN1::BitString(Webpush.decode64(public_key))],
+          1, :CONTEXT_SPECIFIC
+        )
+      ]).to_der
+
+      instance.instance_variable_set(:@curve, OpenSSL::PKey::EC.new(der))
+      instance
+    end
   end
 
   Webpush::Encryption.module_eval do
