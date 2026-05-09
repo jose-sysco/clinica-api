@@ -63,10 +63,25 @@ class PushNotificationService
            tag:   "appt-reminder-#{appointment.id}")
   end
 
-  # Notify the doctor assigned to the appointment
+  # Notify every user in the org who has an active push subscription
   def self.notify_appointment_users(appointment, payload)
-    doctor_user = appointment.doctor&.user
-    notify(doctor_user, payload) if doctor_user
+    message = JSON.generate(payload)
+    ActsAsTenant.without_tenant do
+      PushSubscription.where(organization_id: appointment.organization_id).each do |sub|
+        Webpush.payload_send(
+          message:  message,
+          endpoint: sub.endpoint,
+          p256dh:   sub.p256dh,
+          auth:     sub.auth,
+          vapid:    VAPID_KEYS,
+          ttl:      86_400
+        )
+      rescue Webpush::InvalidSubscription, Webpush::ExpiredSubscription
+        sub.destroy
+      rescue StandardError => e
+        Rails.logger.error("[PushNotification] Error sending to #{sub.endpoint}: #{e.message}")
+      end
+    end
   end
   private_class_method :notify_appointment_users
 
