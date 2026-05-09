@@ -43,7 +43,7 @@ class PushNotificationService
     notify_appointment_users(appointment,
            title: "Cita confirmada",
            body:  "Cita con #{appointment.doctor.full_name} el #{format_date(appointment.scheduled_at)} confirmada.",
-           url:   "/dashboard/citas",
+           url:   "/dashboard/appointments/#{appointment.id}",
            tag:   "appt-confirmed-#{appointment.id}")
   end
 
@@ -51,7 +51,7 @@ class PushNotificationService
     notify_appointment_users(appointment,
            title: "Cita cancelada",
            body:  "Cita con #{appointment.doctor.full_name} el #{format_date(appointment.scheduled_at)} fue cancelada.",
-           url:   "/dashboard/citas",
+           url:   "/dashboard/appointments/#{appointment.id}",
            tag:   "appt-cancelled-#{appointment.id}")
   end
 
@@ -59,7 +59,7 @@ class PushNotificationService
     notify_appointment_users(appointment,
            title: "Recordatorio de cita",
            body:  "Mañana: cita con #{appointment.doctor.full_name} a las #{appointment.scheduled_at.strftime('%H:%M')}.",
-           url:   "/dashboard/citas",
+           url:   "/dashboard/appointments/#{appointment.id}",
            tag:   "appt-reminder-#{appointment.id}")
   end
 
