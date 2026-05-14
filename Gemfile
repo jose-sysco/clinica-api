@@ -71,7 +71,7 @@ gem "solid_queue"
 gem "resend"
 
 # Paginacion
-gem "pagy", "~> 9.0"
+gem "pagy", "~> 43.5"
 
 # CORS
 gem "rack-cors"
