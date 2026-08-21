@@ -24,13 +24,7 @@ module Api
         authorize Prescription, policy_class: PrescriptionPolicy
         prescription = Prescription.new(prescription_params)
         prescription.organization = ActsAsTenant.current_tenant
-
-        # Assign doctor — admin can specify, doctor always creates as themselves
-        if current_user.doctor?
-          prescription.doctor = current_user.doctor
-        elsif params[:prescription][:doctor_id].present?
-          prescription.doctor = Doctor.find(params[:prescription][:doctor_id])
-        end
+        prescription.doctor = resolve_doctor(prescription)
 
         prescription.save!
         render json: prescription_json(prescription), status: :created
@@ -69,6 +63,20 @@ module Api
 
       def set_prescription
         @prescription = Prescription.find(params[:id])
+      end
+
+      # Resuelve el doctor de la receta:
+      # - Un usuario doctor siempre emite como él mismo.
+      # - Admin/recepcionista: usa doctor_id explícito si viene, si no lo infiere
+      #   del expediente médico o de la cita asociada (que ya tienen doctor_id).
+      def resolve_doctor(prescription)
+        return current_user.doctor if current_user.doctor? && current_user.doctor
+
+        if params[:prescription][:doctor_id].present?
+          Doctor.find(params[:prescription][:doctor_id])
+        else
+          prescription.medical_record&.doctor || prescription.appointment&.doctor
+        end
       end
 
       def prescription_params
