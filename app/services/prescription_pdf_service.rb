@@ -4,9 +4,8 @@ require "rqrcode"
 class PrescriptionPdfService
   PAGE_MARGIN = 36
 
-  def initialize(prescription, host)
+  def initialize(prescription)
     @prescription = prescription
-    @host         = host
     @org          = prescription.organization
     @doctor       = prescription.doctor
     @patient      = prescription.patient
@@ -27,6 +26,23 @@ class PrescriptionPdfService
 
   private
 
+  # Prawn usa la fuente Helvetica built-in, que solo soporta Windows-1252.
+  # Cualquier carácter fuera de ese set (℞, comillas tipográficas, emojis,
+  # guiones largos) hace reventar el render. Reemplazamos los comunes por su
+  # equivalente ASCII y descartamos el resto para nunca fallar.
+  def safe(str)
+    s = str.to_s
+    s = s.dup.force_encoding("UTF-8") unless s.encoding == Encoding::UTF_8
+    s.scrub("")
+       .gsub("℞", "Rx")
+       .gsub(/[‘’‚‛]/, "'")
+       .gsub(/[“”„‟]/, '"')
+       .gsub(/[–—−]/, "-")
+       .gsub("…", "...")
+       .encode("Windows-1252", invalid: :replace, undef: :replace, replace: "")
+       .encode("UTF-8")
+  end
+
   def setup_fonts(pdf)
     pdf.font_families.update(
       "Helvetica" => {
@@ -41,24 +57,24 @@ class PrescriptionPdfService
   def draw_header(pdf)
     # Clinic name + doctor info on the left
     pdf.bounding_box([0, pdf.cursor], width: pdf.bounds.width - 90) do
-      pdf.text @org.name, size: 14, style: :bold, color: "1e3a8a"
+      pdf.text safe(@org.name), size: 14, style: :bold, color: "1e3a8a"
       pdf.move_down 4
-      pdf.text "Dr(a). #{@doctor.full_name}", size: 11, color: "374151"
+      pdf.text "Dr(a). #{safe(@doctor.full_name)}", size: 11, color: "374151"
       if @doctor.specialty.present?
-        pdf.text @doctor.specialty, size: 9, color: "6b7280"
+        pdf.text safe(@doctor.specialty), size: 9, color: "6b7280"
       end
       pdf.move_down 2
-      pdf.text "Lic. #{@doctor.license_number}", size: 9, color: "6b7280" if @doctor.license_number.present?
+      pdf.text "Lic. #{safe(@doctor.license_number)}", size: 9, color: "6b7280" if @doctor.license_number.present?
       if @org.address.present?
-        pdf.text @org.address, size: 8, color: "9ca3af"
+        pdf.text safe(@org.address), size: 8, color: "9ca3af"
       end
       if @org.phone.present?
-        pdf.text "Tel: #{@org.phone}", size: 8, color: "9ca3af"
+        pdf.text "Tel: #{safe(@org.phone)}", size: 8, color: "9ca3af"
       end
     end
 
     # QR code on the right
-    qr_data = @prescription.public_url(@host)
+    qr_data = @prescription.public_url
     qr = RQRCode::QRCode.new(qr_data)
     png = qr.as_png(size: 80, border_modules: 1)
     qr_io = StringIO.new(png.to_s)
@@ -88,7 +104,7 @@ class PrescriptionPdfService
 
     pdf.bounding_box([8, pdf.cursor - 6], width: pdf.bounds.width - 16) do
       pdf.font_size 8 do
-        pdf.text "<b>Paciente:</b> #{@patient.name}    <b>Fecha:</b> #{issued}#{valid ? "    <b>Válida hasta:</b> #{valid}" : ""}",
+        pdf.text "<b>Paciente:</b> #{safe(@patient.name)}    <b>Fecha:</b> #{issued}#{valid ? "    <b>Válida hasta:</b> #{valid}" : ""}",
                  inline_format: true, color: "374151"
         pdf.move_down 4
         patient_details = []
@@ -107,21 +123,21 @@ class PrescriptionPdfService
   end
 
   def draw_rx_section(pdf)
-    pdf.text "℞", size: 28, style: :bold, color: "1e3a8a"
+    pdf.text "Rx", size: 28, style: :bold, color: "1e3a8a"
     if @prescription.diagnosis.present?
       pdf.move_down 2
-      pdf.text "Dx: #{@prescription.diagnosis}", size: 9, color: "374151"
+      pdf.text "Dx: #{safe(@prescription.diagnosis)}", size: 9, color: "374151"
     end
     pdf.move_down 8
   end
 
   def draw_medications(pdf)
     @prescription.medications.each_with_index do |med, idx|
-      name        = med["name"].to_s
-      dose        = med["dose"].to_s
-      frequency   = med["frequency"].to_s
-      duration    = med["duration"].to_s
-      instructions = med["instructions"].to_s
+      name        = safe(med["name"])
+      dose        = safe(med["dose"])
+      frequency   = safe(med["frequency"])
+      duration    = safe(med["duration"])
+      instructions = safe(med["instructions"])
 
       pdf.font_size 10 do
         pdf.text "#{idx + 1}. <b>#{name}</b>#{dose.present? ? " #{dose}" : ""}", inline_format: true, color: "111827"
@@ -154,7 +170,7 @@ class PrescriptionPdfService
     pdf.undash
     pdf.move_down 6
     pdf.font_size 9 do
-      pdf.text "<b>Indicaciones:</b> #{@prescription.notes}", inline_format: true, color: "374151"
+      pdf.text "<b>Indicaciones:</b> #{safe(@prescription.notes)}", inline_format: true, color: "374151"
     end
   end
 
@@ -166,7 +182,7 @@ class PrescriptionPdfService
 
     token_short = @prescription.verification_token.first(16)
     pdf.font_size 7 do
-      pdf.text "Código de verificación: #{token_short}... · Verifica en: #{@prescription.public_url(@host)}",
+      pdf.text "Código de verificación: #{token_short}... · Verifica en: #{@prescription.public_url}",
                color: "9ca3af", align: :center
     end
   end

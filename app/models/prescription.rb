@@ -37,8 +37,10 @@ class Prescription < ApplicationRecord
 
   scope :recent, -> { order(issued_at: :desc) }
 
-  def public_url(host)
-    "#{host}/recetas/#{verification_token}"
+  # La verificación por QR abre una página del frontend (Next.js), no del API.
+  def public_url
+    base = ENV.fetch("FRONTEND_URL", "http://localhost:3000").chomp("/")
+    "#{base}/recetas/#{verification_token}"
   end
 
   private

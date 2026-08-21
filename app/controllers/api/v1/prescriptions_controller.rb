@@ -51,8 +51,7 @@ module Api
       # GET /api/v1/prescriptions/:id/download
       def download
         authorize @prescription, policy_class: PrescriptionPolicy
-        host = "#{request.protocol}#{request.host_with_port}"
-        pdf_data = PrescriptionPdfService.new(@prescription, host).generate
+        pdf_data = PrescriptionPdfService.new(@prescription).generate
         send_data pdf_data,
                   filename:    "receta_#{@prescription.verification_token.first(8)}.pdf",
                   type:        "application/pdf",
@@ -112,7 +111,7 @@ module Api
           },
           medical_record_id: p.medical_record_id,
           appointment_id:    p.appointment_id,
-          public_url:        p.public_url("#{request.protocol}#{request.host_with_port}"),
+          public_url:        p.public_url,
           created_at:        p.created_at
         }
       end
